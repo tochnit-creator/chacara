@@ -514,6 +514,8 @@ textarea{min-height:72px;resize:vertical}
 .org-linha .o-sel{display:flex;gap:6px;min-width:0}
 .org-linha select{padding:8px 10px;font-size:.88rem;font-weight:700}
 .x-btn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:10px;width:38px;flex:none;cursor:pointer;font:800 1rem var(--body)}
+.org-aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.9rem}
+.org-aviso .btn{padding:8px 12px;font-size:.85rem}
 .novo{display:flex;flex-direction:column;gap:12px;background:var(--bg);border-radius:14px;padding:16px}
 .novo h3{font-size:1.05rem}
 .campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -542,13 +544,14 @@ const MARKUP=`
     <p class="lead">16 pessoas, 5 famílias. Escolha a sua família, marque o que já está garantido e salve a sua lista em PDF.</p>
   </header>
 
-  <details class="org" id="org" hidden>
+  <details class="org" id="org">
     <summary>
-      <div><h2>Organizar a lista</h2><small>Só você vê esta parte</small></div>
+      <div><h2>Mudar a lista</h2><small>Troque itens entre as famílias, tire ou adicione</small></div>
       <svg class="seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </summary>
     <div class="org-corpo">
-      <p>Troque quem leva cada item, tire itens da lista ou adicione itens novos. O grupo só vê as mudanças depois que você tocar em <b>Salvar para todos</b>.</p>
+      <p id="orgTxt">Escolha quem leva cada item, tire itens ou adicione novos. As mudanças ficam salvas neste aparelho e já aparecem nas listas, no PDF e no texto do WhatsApp.</p>
+      <div class="org-aviso" id="orgAviso" hidden><span id="orgAvisoTxt"></span><button type="button" class="btn" id="voltarBtn">Voltar à lista original</button></div>
       <div id="orgLista" style="display:flex;flex-direction:column;gap:18px"></div>
       <div class="novo">
         <h3>Adicionar item</h3>
@@ -596,6 +599,13 @@ ESTADO = ESTADO && typeof ESTADO==='object' ? ESTADO : {};
 ESTADO.dono = ESTADO.dono || {};
 ESTADO.extras = Array.isArray(ESTADO.extras) ? ESTADO.extras : [];
 const ORIGINAL = JSON.stringify(ESTADO);
+const KEY_MUD='lista-chacara-mudancas-v1';
+try{
+  const l=JSON.parse(localStorage.getItem(KEY_MUD)||'null');
+  if(l && l.base===ORIGINAL && l.estado && typeof l.estado==='object'){
+    ESTADO=l.estado; ESTADO.dono=ESTADO.dono||{}; ESTADO.extras=Array.isArray(ESTADO.extras)?ESTADO.extras:[];
+  }
+}catch(e){}
 
 const FAMILIAS = [
   {id:'nicoly',  nome:'Família Nicoly',  cor:'--f-nicoly',  hex:'#b4502b', membros:['Bruno','Nicolly','Silvio','Cleide']},
@@ -817,7 +827,6 @@ function opcoesFamilia(sel){
 }
 function corDe(id){ const f=famPor(id); return f?'var('+f.cor+')':'var(--line)'; }
 function renderOrg(){
-  if($('#org').hidden) return;
   const box=$('#orgLista'); box.innerHTML='';
   GRUPOS.forEach(([g,nomeG])=>{
     const its=TODOS.filter(i=>i.g===g); if(!its.length) return;
@@ -864,14 +873,27 @@ function contarMudancas(){
   ESTADO.extras.forEach(e=>{ const x=o.find(y=>y.id===e.id); if(x && (x.nome!==e.nome||x.qtd!==e.qtd||x.obs!==e.obs||x.g!==e.g) && x.dono===e.dono) n++; });
   return n;
 }
-function mudouEstado(){
-  aplicarEstado(); renderOrg(); renderMinha(); renderResumo();
+function atualizarAvisos(){
   const n = JSON.stringify(ESTADO)===ORIGINAL ? 0 : Math.max(1,contarMudancas());
-  $('#salvarBarra').hidden = n===0;
-  $('#wrap').classList.toggle('com-barra', n>0);
-  $('#salvarTxt').textContent = n===1 ? '1 mudança ainda não salva' : n+' mudanças ainda não salvas';
+  $('#orgAviso').hidden = n===0;
+  $('#orgAvisoTxt').textContent = n===1 ? '1 mudança feita neste aparelho' : n+' mudanças feitas neste aparelho';
+  const barra = !!ART && n>0;
+  $('#salvarBarra').hidden = !barra;
+  $('#wrap').classList.toggle('com-barra', barra);
+  $('#salvarTxt').textContent = n===1 ? '1 mudança ainda não salva para o grupo' : n+' mudanças ainda não salvas para o grupo';
 }
-$('#desfazerBtn').onclick=()=>{ ESTADO=JSON.parse(ORIGINAL); mudouEstado(); toast('Mudanças desfeitas.'); };
+function guardarMudancas(){
+  try{
+    if(JSON.stringify(ESTADO)===ORIGINAL) localStorage.removeItem(KEY_MUD);
+    else localStorage.setItem(KEY_MUD, JSON.stringify({base:ORIGINAL, estado:ESTADO}));
+  }catch(e){}
+}
+function mudouEstado(){
+  aplicarEstado(); guardarMudancas(); renderOrg(); renderMinha(); renderResumo(); atualizarAvisos();
+}
+function voltarOriginal(){ ESTADO=JSON.parse(ORIGINAL); mudouEstado(); toast('A lista voltou ao original.'); }
+$('#desfazerBtn').onclick=voltarOriginal;
+$('#voltarBtn').onclick=voltarOriginal;
 $('#salvarBtn').onclick=async()=>{
   if(!ART){ toast('Salvar só funciona para quem criou a lista.'); return; }
   const b=$('#salvarBtn'); b.disabled=true; b.textContent='Salvando…';
@@ -891,7 +913,7 @@ $('#salvarBtn').onclick=async()=>{
   try{
     if(!window.claude || !window.claude.use) return;
     const [u,a]=await Promise.all([window.claude.use('user'), window.claude.use('artifact')]);
-    if(u && a && await u.canEdit()){ ART=a; $('#org').hidden=false; prepararNovo(); renderOrg(); }
+    if(u && a && await u.canEdit()){ ART=a; $('#orgTxt').innerHTML='Escolha quem leva cada item, tire itens ou adicione novos. As mudanças já aparecem para você aqui; para o grupo ver, toque em <b>Salvar para todos</b>.'; atualizarAvisos(); }
   }catch(e){}
 })();
 
@@ -1063,6 +1085,6 @@ async function baixar(btn, gerar, nomeArq){
 
 $('#pdfGeral').innerHTML=ICON_PDF+'Baixar PDF geral';
 $('#pdfGeral').onclick=()=>baixar($('#pdfGeral'), pdfGeral, 'Quem-traz-o-que-Lista-geral.pdf');
-renderEscolha(); renderMinha(); renderResumo();
+prepararNovo(); renderOrg(); renderEscolha(); renderMinha(); renderResumo(); atualizarAvisos();
 /*FIM-APP*/})({"dono":{},"extras":[]});</script>
 </body></html>
