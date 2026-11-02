@@ -402,29 +402,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 //# sourceMappingURL=jspdf.umd.min.js.map</script>
 <script>(function app(ESTADO){
 "use strict";
-/* A página inteira mora nesta função: o modo Organizar republica a página chamando app.toString() com o novo ESTADO. */
-const ESQUELETO='<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>';
-/* O gerador de PDF vai embutido no próprio arquivo (bloco jspdf-lib), para funcionar mesmo aberto direto no WhatsApp, sem internet. */
+/* A página inteira mora nesta função: o "Salvar para todos" (só dentro do Claude) republica a página chamando app.toString() com o novo ESTADO. */
+const ESQUELETO='<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>';
 const LIB=(document.getElementById('jspdf-lib')||{}).textContent||'';
 const CABECA='<title>Lista da Chácara</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">\n'+
   (LIB ? '<script id="jspdf-lib">'+LIB+'<\/script>\n' : '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>\n');
+const SITE='https://tochnit-creator.github.io/chacara/';
 
 const CSS=`
-/* Layout: faixa de toalha xadrez → (só o dono) painel Organizar → escolha da família → lista da família com confirmação e PDF → lista completa com PDF geral. */
+/* Layout: toalha xadrez → quem é você → lista da família → painel Distribuir (item a item, em unidades de compra) → Relatório (placar, situação de cada item, peso de cada grupo) → lista completa. */
 :root{
   --bg:#f2f4ee; --surface:#ffffff; --ink:#1b2620; --muted:#5a675f; --line:#dbe2d8; --soft:#e7ede3;
-  --accent:#1f3d2f; --accent-ink:#ffffff; --gold:#9c7a2c; --warn:#a4561a;
+  --accent:#1f3d2f; --accent-ink:#ffffff; --gold:#9c7a2c;
+  --ok:#2f7d4f; --warn:#a86a0c; --bad:#b3372f; --info:#2f6390;
   --f-nicoly:#b4502b; --f-gabriel:#2c6797; --f-joao:#8a6710; --f-camily:#8a3e84; --f-dinora:#2b7a57; --f-sophia:#a3466b; --f-weverton:#1d7480; --f-bryan:#5146a8; --f-lucasb:#5c6e1e;
   --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
   --body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#121a15; --surface:#1a241e; --ink:#e6ece7; --muted:#9aa89f; --line:#2c3a32; --soft:#212c25;
-  --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c; --warn:#f0a465;
+  --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c;
+  --ok:#74c99a; --warn:#e6b25a; --bad:#f08a80; --info:#86b6e6;
   --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; --f-sophia:#e58fb2; --f-weverton:#6cc4cf; --f-bryan:#a59cf0; --f-lucasb:#b5c96a; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#121a15; --surface:#1a241e; --ink:#e6ece7; --muted:#9aa89f; --line:#2c3a32; --soft:#212c25;
-  --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c; --warn:#f0a465;
+  --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c;
+  --ok:#74c99a; --warn:#e6b25a; --bad:#f08a80; --info:#86b6e6;
   --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; --f-sophia:#e58fb2; --f-weverton:#6cc4cf; --f-bryan:#a59cf0; --f-lucasb:#b5c96a; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
@@ -439,6 +442,8 @@ h2{font-size:1.3rem;font-weight:800}
 .eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
 .lead{color:var(--muted);margin:10px 0 0;max-width:56ch}
 section{display:flex;flex-direction:column;gap:14px}
+.st-ok{--stc:var(--ok)} .st-warn{--stc:var(--warn)} .st-bad{--stc:var(--bad)} .st-info{--stc:var(--info)}
+[data-st=ok]{--stc:var(--ok)} [data-st=warn]{--stc:var(--warn)} [data-st=bad]{--stc:var(--bad)} [data-st=info]{--stc:var(--info)}
 
 .escolha{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .fam-btn{--c:var(--accent);text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;min-width:0}
@@ -447,7 +452,7 @@ section{display:flex;flex-direction:column;gap:14px}
 .fam-btn[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
 button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px}
 
-.dica{border:1.5px dashed var(--line);border-radius:16px;padding:22px;color:var(--muted);text-align:center}
+.dica{border:1.5px dashed var(--line);border-radius:16px;padding:22px;color:var(--muted);text-align:center;margin:0}
 .cartao{--c:var(--accent);background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .cartao-topo{background:var(--c);color:#fff;padding:18px 20px;display:flex;flex-direction:column;gap:4px}
 .cartao-topo h2{font-size:1.6rem;color:#fff}
@@ -476,23 +481,12 @@ textarea{min-height:72px;resize:vertical}
 .acoes{display:flex;flex-wrap:wrap;gap:10px}
 .btn{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:800 .9rem var(--body);padding:11px 16px;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .btn.cheio{background:var(--c,var(--accent));border-color:var(--c,var(--accent));color:var(--accent-ink)}
-.cartao .btn.cheio,.mini-acoes .btn.cheio{color:#fff}
+.cartao .btn.cheio{color:#fff}
+.btn.pequeno{padding:8px 12px;font-size:.84rem}
 .btn:disabled{opacity:.55;cursor:progress}
 .btn svg{width:18px;height:18px;flex:none}
 
-.geral-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.resumo{display:grid;gap:12px}
-@media (min-width:680px){ .resumo{grid-template-columns:1fr 1fr} }
-.mini{--c:var(--accent);background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
-.mini h3{font-size:1.05rem;color:var(--c)}
-.mini .membros{color:var(--muted);font-size:.8rem}
-.mini ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
-.mini li{display:flex;justify-content:space-between;gap:10px}
-.mini li span:last-child{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.mini .vazio-fam{color:var(--muted);font-style:italic;font-size:.88rem}
-.nota-rodape{color:var(--muted);font-size:.82rem;margin:0}
-
-/* Organizar (só o dono vê) */
+/* Distribuir */
 .org{background:var(--surface);border:1.5px solid var(--accent);border-radius:18px;overflow:hidden}
 .org summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
 .org summary::-webkit-details-marker{display:none}
@@ -500,22 +494,33 @@ textarea{min-height:72px;resize:vertical}
 .org summary small{display:block;color:var(--muted);font-weight:600;font-size:.82rem}
 .org summary .seta{width:20px;height:20px;flex:none;transition:transform .2s;color:var(--accent)}
 .org[open] summary .seta{transform:rotate(180deg)}
-.org-corpo{padding:4px 20px 22px;display:flex;flex-direction:column;gap:20px}
-.org-corpo > p{margin:12px 0 0;color:var(--muted);font-size:.9rem;max-width:60ch}
+.org-corpo{padding:4px 20px 22px;display:flex;flex-direction:column;gap:18px}
+.org-corpo > p{margin:12px 0 0;color:var(--muted);font-size:.9rem;max-width:62ch}
+.legenda{display:flex;flex-wrap:wrap;gap:6px}
+.org-aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.9rem}
 .org-grupo{display:flex;flex-direction:column}
 .org-grupo h3{font-family:var(--body);font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.pill{flex:none;font:800 .74rem var(--body);padding:3px 9px;border-radius:99px;white-space:nowrap;color:var(--stc,var(--muted));background:color-mix(in srgb,var(--stc,var(--muted)) 13%,transparent);border:1px solid color-mix(in srgb,var(--stc,var(--muted)) 40%,transparent);font-variant-numeric:tabular-nums}
+.d-item{display:flex;flex-direction:column;gap:8px;padding:12px 0 12px 12px;border-bottom:1px dashed var(--line);box-shadow:inset 3px 0 0 var(--stc)}
+.d-item:last-child{border-bottom:0}
+.d-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.d-nome{display:flex;flex-direction:column;min-width:0}
+.d-nome b{font-weight:800}
+.d-nome small{color:var(--muted);font-size:.8rem}
+.d-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cf{--c:var(--accent);display:inline-flex;align-items:center;border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 9%,var(--surface));border-radius:99px;overflow:hidden;font-size:.85rem;max-width:100%}
+.cf-nome{padding:0 2px 0 11px;font-weight:800;color:var(--c);white-space:nowrap}
+.cf button{border:0;background:transparent;color:var(--ink);width:32px;height:34px;font:800 1.05rem var(--body);cursor:pointer;flex:none}
+.cf output{min-width:42px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+select.d-add{width:auto;padding:7px 10px;font-size:.85rem;font-weight:700;border-style:dashed;background:transparent;color:var(--muted);border-radius:99px}
 .org-linha{--c:var(--line);display:grid;grid-template-columns:1fr minmax(150px,46%);align-items:center;gap:6px 12px;padding:9px 0 9px 12px;border-bottom:1px dashed var(--line);box-shadow:inset 3px 0 0 var(--c)}
 .org-linha:last-child{border-bottom:0}
 .org-linha .o-nome{min-width:0;display:flex;flex-direction:column}
 .org-linha .o-nome b{font-weight:700}
 .org-linha .o-nome small{color:var(--muted);font-size:.8rem}
-.org-linha.fora .o-nome b{color:var(--muted);text-decoration:line-through}
-.org-linha.mudou .o-nome b::after{content:"alterado";margin-left:8px;font:800 .62rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);border:1px solid currentColor;border-radius:99px;padding:1px 6px;vertical-align:2px}
 .org-linha .o-sel{display:flex;gap:6px;min-width:0}
 .org-linha select{padding:8px 10px;font-size:.88rem;font-weight:700}
 .x-btn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:10px;width:38px;flex:none;cursor:pointer;font:800 1rem var(--body)}
-.org-aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.9rem}
-.org-aviso .btn{padding:8px 12px;font-size:.85rem}
 .novo{display:flex;flex-direction:column;gap:12px;background:var(--bg);border-radius:14px;padding:16px}
 .novo h3{font-size:1.05rem}
 .campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -524,6 +529,42 @@ textarea{min-height:72px;resize:vertical}
 .campo label{font-size:.8rem;font-weight:800;color:var(--muted)}
 .novo input,.novo select{background:var(--surface)}
 @media (max-width:460px){ .campos{grid-template-columns:1fr} .org-linha{grid-template-columns:1fr} }
+
+/* Relatório */
+.geral-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.placar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:480px){ .placar{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.pl{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--stc);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pl b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--stc);font-variant-numeric:tabular-nums}
+.pl span{font-size:.8rem;font-weight:700;color:var(--muted)}
+.veredito{margin:0;font-weight:700;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--stc) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--stc) 35%,transparent)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;cursor:pointer;color:var(--muted)}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.caixa{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:4px 16px 12px;display:flex;flex-direction:column;gap:12px}
+.caixa .org-grupo h3{padding-top:12px}
+.r-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0 10px 12px;border-bottom:1px dashed var(--line);box-shadow:inset 3px 0 0 var(--stc)}
+.r-item:last-child{border-bottom:0}
+.r-item b{font-weight:800}
+.r-l{grid-column:1 / -1;color:var(--muted);font-size:.84rem}
+.r-l.forte{color:var(--ink);font-weight:600}
+.r-vazio{color:var(--muted);padding:14px 0;margin:0}
+.peso-l{--c:var(--accent);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.peso-l:last-child{border-bottom:0}
+.peso-l b{color:var(--c);font-weight:800}
+.peso-l small{display:block;color:var(--muted);font-size:.8rem;font-variant-numeric:tabular-nums}
+.peso-barra{grid-column:1 / -1;position:relative;height:9px;border-radius:99px;background:var(--soft)}
+.peso-barra i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--c)}
+.peso-barra u{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);border-radius:2px}
+.nota-rodape{color:var(--muted);font-size:.82rem;margin:0}
+.resumo{display:grid;gap:12px}
+@media (min-width:680px){ .resumo{grid-template-columns:1fr 1fr} }
+.mini{--c:var(--accent);background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.mini h3{font-size:1.05rem;color:var(--c)}
+.mini .membros{color:var(--muted);font-size:.8rem}
+.mini ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
+.mini li{display:flex;justify-content:space-between;gap:10px}
+.mini li span:last-child{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mini .vazio-fam{color:var(--muted);font-style:italic;font-size:.88rem;margin:0}
 .salvar-barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ink);color:var(--bg);padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:12px calc(12px + env(safe-area-inset-bottom,0px))}
 .salvar-barra .dentro{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .salvar-barra p{margin:0;flex:1;min-width:160px;font-weight:700;font-size:.92rem}
@@ -535,23 +576,39 @@ textarea{min-height:72px;resize:vertical}
 @media (prefers-reduced-motion: reduce){ .barra i,.org summary .seta{transition:none} }
 `;
 
+const ICON_PDF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
+const ICON_COPY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+const ICON_LINK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+
 const MARKUP=`
 <div class="toalha" aria-hidden="true"></div>
 <main class="wrap" id="wrap">
   <header>
     <p class="eyebrow">Encontro na chácara</p>
     <h1>Quem traz o quê</h1>
-    <p class="lead" id="lead">Escolha a sua família (ou o seu nome), marque o que já está garantido e salve a sua lista em PDF.</p>
+    <p class="lead" id="lead"></p>
   </header>
+
+  <section aria-labelledby="h-escolha">
+    <h2 id="h-escolha">Quem é você?</h2>
+    <div class="escolha" id="escolha"></div>
+  </section>
+
+  <section id="minha" aria-live="polite"></section>
 
   <details class="org" id="org">
     <summary>
-      <div><h2>Mudar a lista</h2><small>Troque itens entre as famílias, tire ou adicione</small></div>
+      <div><h2>Distribuir os itens</h2><small>Divida cada item entre os grupos, em kg, garrafas, caixas e pacotes</small></div>
       <svg class="seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </summary>
     <div class="org-corpo">
-      <p id="orgTxt">Escolha quem leva cada item, tire itens ou adicione novos. As mudanças ficam salvas neste aparelho e já aparecem nas listas, no PDF e no texto do WhatsApp.</p>
-      <div class="org-aviso" id="orgAviso" hidden><span id="orgAvisoTxt"></span><button type="button" class="btn" id="voltarBtn">Voltar à lista original</button></div>
+      <p id="orgTxt">Cada item mostra quanto é recomendado. Use <b>+</b> e <b>−</b> para mudar a parte de cada grupo e <b>+ quem leva</b> para incluir outro grupo no mesmo item. As mudanças ficam salvas neste aparelho. No fim, toque em <b>Copiar link</b> e mande para quem vai conferir.</p>
+      <div class="legenda"><span class="pill st-ok">Certo</span><span class="pill st-warn">Justo, sem folga</span><span class="pill st-bad">Vai faltar</span><span class="pill st-info">Vai sobrar</span></div>
+      <div class="org-aviso" id="orgAviso" hidden><span id="orgAvisoTxt"></span><button type="button" class="btn pequeno" id="voltarBtn"></button></div>
+      <div class="acoes">
+        <button type="button" class="btn cheio" id="linkBtn1"></button>
+        <button type="button" class="btn" id="zerarBtn">Começar do zero</button>
+      </div>
       <div id="orgLista" style="display:flex;flex-direction:column;gap:18px"></div>
       <div class="novo">
         <h3>Adicionar item</h3>
@@ -567,25 +624,30 @@ const MARKUP=`
     </div>
   </details>
 
-  <section aria-labelledby="h-escolha">
-    <h2 id="h-escolha">Quem é você?</h2>
-    <div class="escolha" id="escolha"></div>
-  </section>
-
-  <section id="minha" aria-live="polite"></section>
-
-  <section aria-labelledby="h-geral">
+  <section aria-labelledby="h-rel">
     <div class="geral-topo">
-      <h2 id="h-geral">Lista completa</h2>
+      <h2 id="h-rel">Relatório da distribuição</h2>
       <button class="btn cheio" id="pdfGeral" type="button"></button>
     </div>
+    <div class="placar" id="placar"></div>
+    <p class="veredito" id="veredito"></p>
+    <label class="toggle" for="soAtencao"><input type="checkbox" id="soAtencao"> Mostrar só o que precisa de atenção</label>
+    <div class="caixa" id="relLista"></div>
+    <h3>Peso de cada grupo</h3>
+    <p class="nota-rodape">Compara a parte do gasto de cada grupo com o tamanho do grupo. É uma estimativa feita com preços médios de mercado, só para comparar os grupos entre si. A barra mostra a parte do gasto e o traço mostra a parte das pessoas.</p>
+    <div class="caixa" id="peso"></div>
+    <div class="acoes"><button type="button" class="btn" id="linkBtn2"></button></div>
+  </section>
+
+  <section aria-labelledby="h-geral">
+    <h2 id="h-geral">Lista de cada grupo</h2>
     <div class="resumo" id="resumo"></div>
-    <p class="nota-rodape">As marcações e observações ficam salvas só no seu celular. Para avisar o grupo, mande o PDF ou a lista copiada no WhatsApp.</p>
+    <p class="nota-rodape">As marcações, observações e mudanças ficam salvas só neste aparelho. Para mostrar a alguém, mande o link da distribuição ou o PDF.</p>
   </section>
 </main>
 <div class="salvar-barra" id="salvarBarra" hidden>
   <div class="dentro">
-    <p id="salvarTxt"></p>
+    <p id="salvarTxt">Mudanças ainda não salvas para o grupo</p>
     <button type="button" class="btn claro" id="desfazerBtn">Desfazer</button>
     <button type="button" class="btn cheio" id="salvarBtn">Salvar para todos</button>
   </div>
@@ -595,18 +657,6 @@ const MARKUP=`
 document.body.insertAdjacentHTML('beforeend','<style>'+CSS+'</style>'+MARKUP);
 
 /* ---------- dados ---------- */
-ESTADO = ESTADO && typeof ESTADO==='object' ? ESTADO : {};
-ESTADO.dono = ESTADO.dono || {};
-ESTADO.extras = Array.isArray(ESTADO.extras) ? ESTADO.extras : [];
-const ORIGINAL = JSON.stringify(ESTADO);
-const KEY_MUD='lista-chacara-mudancas-v2';
-try{
-  const l=JSON.parse(localStorage.getItem(KEY_MUD)||'null');
-  if(l && l.base===ORIGINAL && l.estado && typeof l.estado==='object'){
-    ESTADO=l.estado; ESTADO.dono=ESTADO.dono||{}; ESTADO.extras=Array.isArray(ESTADO.extras)?ESTADO.extras:[];
-  }
-}catch(e){}
-
 const FAMILIAS = [
   {id:'nicoly',   nome:'Família Nicolly',  cor:'--f-nicoly',   hex:'#b4502b', membros:['Bruno','Nicolly','Silvio','Cleide']},
   {id:'gabriel',  nome:'Família Gabriel',  cor:'--f-gabriel',  hex:'#2c6797', membros:['Raissa','Gabriel','Sophia (irmã da Raissa)','Lucas','Mãe','Pai']},
@@ -618,110 +668,199 @@ const FAMILIAS = [
   {id:'weverton', nome:'Família Weverton', cor:'--f-weverton', hex:'#1d7480', membros:['Weverton','Suellen','Filho 1','Filho 2']},
   {id:'lucasbass',nome:'Lucas (Bass)',     cor:'--f-lucasb',   hex:'#5c6e1e', membros:['Lucas (Bass)']},
 ];
+const COD={nicoly:'n',gabriel:'g',joao:'j',camily:'c',dinora:'d',bryan:'b',sophia:'s',weverton:'w',lucasbass:'l'};
+const DECOD=Object.fromEntries(Object.entries(COD).map(([k,v])=>[v,k]));
 const GRUPOS = [['manha','Café da manhã'],['almoco','Almoço'],['bebidas','Bebidas'],['sobremesas','Sobremesas'],['descartaveis','Descartáveis'],['tarde','Café da tarde'],['outros','Outros']];
 const NOME_GRUPO = Object.fromEntries(GRUPOS);
+/* pp = consumo por pessoa (na medida "med"); por = quanto vem em cada unidade de compra; preco = estimativa por unidade, só para comparar o peso dos grupos */
 function cafe(g,s){ return [
-  {id:'pao'+s, g, nome:'Pão francês', tipo:'un', pp:2, pesoUn:50},
-  {id:'manteiga'+s, g, nome:'Manteiga', tipo:'g', pp:15, emb:[200,'pote de 200 g','potes de 200 g']},
-  {id:'cafe'+s, g, nome:'Café em pó', tipo:'g', pp:10, emb:[250,'pacote de 250 g','pacotes de 250 g']},
-  {id:'leite'+s, g, nome:'Leite', tipo:'ml', pp:200, emb:[1000,'caixa de 1 L','caixas de 1 L']},
-  {id:'bolacha'+s, g, nome:'Bolachas', tipo:'g', pp:30, emb:[200,'pacote de 200 g','pacotes de 200 g']},
-  {id:'bolo'+s, g, nome:'Bolo', tipo:'fatia', pp:1, porUn:10, un:['bolo','bolos'], nota:'bolo de 1 kg rende umas 10 fatias'},
-  {id:'torta'+s, g, nome:'Torta', tipo:'fatia', pp:0.6, porUn:12, un:['torta','tortas'], nota:'caseira, o Bruno faz · 12 fatias cada'},
-  {id:'suco'+s, g, nome:'Suco', tipo:'ml', pp:200, emb:[1000,'caixa de 1 L','caixas de 1 L']},
-  {id:'nescau'+s, g, nome:'Nescau', tipo:'g', pp:10, emb:[370,'pote de 370 g','potes de 370 g']},
+  {id:'pao'+s, g, nome:'Pão francês', med:'un', rot:['pão','pães'], pp:2, por:10, mult:10, un:['pão','pães'], preco:10},
+  {id:'manteiga'+s, g, nome:'Manteiga', med:'g', pp:15, por:200, un:['pote de 200 g','potes de 200 g'], preco:15},
+  {id:'presunto'+s, g, nome:'Presunto', med:'g', pp:30, por:100, mult:100, un:['g','g'], preco:5, nota:'fatiado'},
+  {id:'queijo'+s, g, nome:'Queijo', med:'g', pp:30, por:100, mult:100, un:['g','g'], preco:6, nota:'mussarela fatiada'},
+  {id:'cafe'+s, g, nome:'Café em pó', med:'g', pp:10, por:250, un:['pacote de 250 g','pacotes de 250 g'], preco:20},
+  {id:'leite'+s, g, nome:'Leite', med:'ml', pp:200, por:1000, un:['caixa de 1 L','caixas de 1 L'], preco:6},
+  {id:'bolacha'+s, g, nome:'Bolachas', med:'g', pp:30, por:200, un:['pacote de 200 g','pacotes de 200 g'], preco:5},
+  {id:'bolo'+s, g, nome:'Bolo', med:'fatia', pp:1, por:10, un:['bolo','bolos'], preco:20, nota:'bolo de 1 kg, umas 10 fatias'},
+  {id:'torta'+s, g, nome:'Torta', med:'fatia', pp:0.6, por:12, un:['torta','tortas'], preco:25, nota:'caseira, o Bruno faz · 12 fatias cada'},
+  {id:'suco'+s, g, nome:'Suco', med:'ml', pp:200, por:1000, un:['caixa de 1 L','caixas de 1 L'], preco:7},
+  {id:'nescau'+s, g, nome:'Nescau', med:'g', pp:10, por:370, un:['pote de 370 g','potes de 370 g'], preco:15},
 ];}
-const BASE = [
+const ITENS = [
   ...cafe('manha',''),
-  {id:'arroz', g:'almoco', nome:'Arroz', tipo:'g', pp:80, emb:[1000,'pacote de 1 kg','pacotes de 1 kg'], nota:'peso cru'},
-  {id:'farofa', g:'almoco', nome:'Farofa pronta', tipo:'g', pp:40, emb:[500,'pacote de 500 g','pacotes de 500 g']},
-  {id:'vinagrete', g:'almoco', nome:'Vinagrete', tipo:'g', pp:60, vinagrete:true},
-  {id:'molho', g:'almoco', nome:'Molho de alho', tipo:'g', pp:25, nota:'combinar a receita com a Raissa'},
-  {id:'carne', g:'almoco', nome:'Carne bovina', tipo:'g', pp:250, nota:'fraldinha, contra-filé, maminha'},
-  {id:'linguica', g:'almoco', nome:'Linguiça', tipo:'g', pp:100, nota:'toscana'},
-  {id:'frango', g:'almoco', nome:'Frango', tipo:'g', pp:100, nota:'coxa, sobrecoxa ou coração'},
-  {id:'refri', g:'bebidas', nome:'Refrigerante', tipo:'ml', pp:600, emb:[2000,'garrafa de 2 L','garrafas de 2 L']},
-  {id:'sucos', g:'bebidas', nome:'Suco (almoço)', tipo:'ml', pp:300, emb:[1000,'caixa de 1 L','caixas de 1 L']},
-  {id:'mousse', g:'sobremesas', nome:'Mousse', tipo:'g', pp:80, nota:'maracujá ou chocolate'},
-  {id:'sorvete', g:'sobremesas', nome:'Sorvete', tipo:'ml', pp:100, emb:[2000,'pote de 2 L','potes de 2 L']},
-  {id:'copo', g:'descartaveis', nome:'Copos', tipo:'un', pp:5, emb:[100,'pacote de 100','pacotes de 100']},
-  {id:'prato', g:'descartaveis', nome:'Pratos grandes', tipo:'un', pp:3, emb:[10,'pacote de 10','pacotes de 10']},
-  {id:'garfo', g:'descartaveis', nome:'Garfos', tipo:'un', pp:2, emb:[50,'pacote de 50','pacotes de 50']},
-  {id:'colher', g:'descartaveis', nome:'Colheres', tipo:'un', pp:2, emb:[50,'pacote de 50','pacotes de 50']},
-  {id:'guardanapo', g:'descartaveis', nome:'Guardanapos', tipo:'un', pp:6, emb:[50,'pacote de 50','pacotes de 50']},
+  {id:'arroz', g:'almoco', nome:'Arroz', med:'g', pp:80, por:1000, un:['pacote de 1 kg','pacotes de 1 kg'], preco:7, nota:'peso cru'},
+  {id:'farofa', g:'almoco', nome:'Farofa pronta', med:'g', pp:40, por:500, un:['pacote de 500 g','pacotes de 500 g'], preco:5},
+  {id:'vinagrete', g:'almoco', nome:'Vinagrete', med:'g', pp:60, por:1000, un:['kg','kg'], preco:15, nota:'cada kg: uns 5 tomates, 2 cebolas e 1 pimentão'},
+  {id:'molho', g:'almoco', nome:'Molho de alho', med:'g', pp:25, por:250, un:['pote de 250 g','potes de 250 g'], preco:7, nota:'combinar a receita com a Raissa'},
+  {id:'carne', g:'almoco', nome:'Carne bovina', med:'g', pp:250, por:1000, un:['kg','kg'], preco:50, nota:'fraldinha, contra-filé, maminha'},
+  {id:'linguica', g:'almoco', nome:'Linguiça', med:'g', pp:100, por:1000, un:['kg','kg'], preco:25, nota:'toscana'},
+  {id:'frango', g:'almoco', nome:'Frango', med:'g', pp:100, por:1000, un:['kg','kg'], preco:18, nota:'coxa, sobrecoxa ou coração'},
+  {id:'refri', g:'bebidas', nome:'Refrigerante', med:'ml', pp:600, por:2000, un:['garrafa de 2 L','garrafas de 2 L'], preco:10},
+  {id:'sucos', g:'bebidas', nome:'Suco (almoço)', med:'ml', pp:300, por:1000, un:['caixa de 1 L','caixas de 1 L'], preco:7},
+  {id:'mousse', g:'sobremesas', nome:'Mousse', med:'g', pp:80, por:1000, un:['travessa de 1 kg','travessas de 1 kg'], preco:25, nota:'maracujá ou chocolate'},
+  {id:'sorvete', g:'sobremesas', nome:'Sorvete', med:'ml', pp:100, por:2000, un:['pote de 2 L','potes de 2 L'], preco:25},
+  {id:'copo', g:'descartaveis', nome:'Copos', med:'un', rot:['copo','copos'], pp:5, por:100, un:['pacote de 100 copos','pacotes de 100 copos'], preco:8},
+  {id:'prato', g:'descartaveis', nome:'Pratos grandes', med:'un', rot:['prato','pratos'], pp:3, por:10, un:['pacote de 10 pratos','pacotes de 10 pratos'], preco:6},
+  {id:'garfo', g:'descartaveis', nome:'Garfos', med:'un', rot:['garfo','garfos'], pp:2, por:50, un:['pacote de 50 garfos','pacotes de 50 garfos'], preco:7},
+  {id:'colher', g:'descartaveis', nome:'Colheres', med:'un', rot:['colher','colheres'], pp:2, por:50, un:['pacote de 50 colheres','pacotes de 50 colheres'], preco:7},
+  {id:'guardanapo', g:'descartaveis', nome:'Guardanapos', med:'un', rot:['guardanapo','guardanapos'], pp:6, por:50, un:['pacote de 50 guardanapos','pacotes de 50 guardanapos'], preco:3},
   ...cafe('tarde','_t'),
 ];
-/* Divisão pensada para o gasto de cada grupo ficar proporcional ao número de pessoas. */
-const DIVISAO = {
-  nicoly:   ['pao','manteiga','cafe','leite','bolacha','bolo','torta','torta_t'],
-  gabriel:  ['carne','molho'],
-  joao:     ['refri','sucos'],
-  camily:   ['mousse','copo','prato','garfo','colher','guardanapo'],
-  dinora:   ['pao_t','manteiga_t','leite_t'],
-  bryan:    ['sorvete'],
-  sophia:   ['bolo_t','cafe_t','bolacha_t'],
-  weverton: ['suco','nescau','arroz','farofa','vinagrete','linguica','frango'],
-  lucasbass:['suco_t','nescau_t'],
+const ITEM=Object.fromEntries(ITENS.map(i=>[i.id,i]));
+/* Divisão sugerida, em unidades de compra. Pensada para o gasto de cada grupo ficar proporcional ao número de pessoas. */
+const SUG={
+  pao:{nicoly:6}, manteiga:{nicoly:3}, presunto:{weverton:9}, queijo:{gabriel:9}, cafe:{nicoly:2}, leite:{joao:6}, bolacha:{joao:5}, bolo:{nicoly:3}, torta:{nicoly:2}, suco:{weverton:6}, nescau:{weverton:1},
+  arroz:{weverton:3}, farofa:{gabriel:3}, vinagrete:{weverton:2}, molho:{gabriel:3}, carne:{gabriel:6,weverton:2}, linguica:{gabriel:3}, frango:{weverton:3},
+  refri:{joao:9}, sucos:{camily:9}, mousse:{lucasbass:3}, sorvete:{bryan:2},
+  copo:{weverton:2}, prato:{camily:9}, garfo:{gabriel:2}, colher:{gabriel:2}, guardanapo:{camily:4},
+  pao_t:{dinora:6}, manteiga_t:{dinora:3}, presunto_t:{dinora:4,lucasbass:5}, queijo_t:{sophia:4,camily:3,bryan:2}, cafe_t:{sophia:2}, leite_t:{dinora:6}, bolacha_t:{sophia:5}, bolo_t:{sophia:3}, torta_t:{nicoly:2}, suco_t:{bryan:3,camily:3}, nescau_t:{sophia:1},
 };
-const PADRAO = {};
-Object.entries(DIVISAO).forEach(([f,ids])=>ids.forEach(id=>{ PADRAO[id]=f; }));
 const FORA='ninguem';
-let TODOS=[], DONO={};
-function aplicarEstado(){
-  const extras=ESTADO.extras.map(e=>({...e, extra:true}));
-  TODOS=[...BASE, ...extras];
-  DONO={...PADRAO};
-  extras.forEach(e=>{ DONO[e.id]=e.dono||FORA; });
-  Object.entries(ESTADO.dono).forEach(([k,v])=>{ if(k in DONO) DONO[k]=v; });
-}
-function donoOriginal(){
-  const o=JSON.parse(ORIGINAL); const d={...PADRAO};
-  (o.extras||[]).forEach(e=>d[e.id]=e.dono||FORA);
-  Object.entries(o.dono||{}).forEach(([k,v])=>{ if(k in d) d[k]=v; });
-  return d;
-}
-const DONO_ORIG = donoOriginal();
-aplicarEstado();
-
+const famPor = id => FAMILIAS.find(f=>f.id===id);
+const nomeCurto = f => f.nome.replace('Família ','');
 const FATOR = 1.2;
 const PESSOAS = FAMILIAS.reduce((s,f)=>s+f.membros.length,0);
-const nf = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:1});
-const peso = g => g>=1000 ? nf.format(Math.ceil(g/100)/10)+' kg' : (Math.ceil(g/10)*10)+' g';
-const vol = ml => ml>=1000 ? nf.format(Math.ceil(ml/100)/10)+' L' : (Math.ceil(ml/50)*50)+' ml';
-const plural = (n,emb) => n+' '+(n===1?emb[1]:emb[2]);
 
-function calcular(i){
-  if(i.extra) return {qtd:i.qtd||'', sub:i.obs||''};
-  const q = PESSOAS * i.pp * FATOR;
-  let qtd=''; const sub=[];
-  if(i.tipo==='g'){ qtd=peso(q); if(i.emb) sub.push(plural(Math.ceil(q/i.emb[0]),i.emb)); }
-  if(i.tipo==='ml'){ qtd=vol(q); if(i.emb) sub.push(plural(Math.ceil(q/i.emb[0]),i.emb)); }
-  if(i.tipo==='un'){ const n=Math.ceil(q); qtd=n+' un'; if(i.pesoUn) sub.push('aprox. '+peso(n*i.pesoUn)); if(i.emb) sub.push(plural(Math.ceil(n/i.emb[0]),i.emb)); }
-  if(i.tipo==='fatia'){ const n=Math.max(1,Math.ceil(q/i.porUn)); qtd=n+' '+(n===1?i.un[0]:i.un[1]); sub.push('aprox. '+Math.ceil(q)+' fatias'); }
-  if(i.vinagrete){
-    const t=Math.ceil(q*.6/120), c=Math.ceil(q*.25/150), p=Math.max(1,Math.ceil(q*.15/150));
-    sub.push('aprox. '+t+' tomates, '+c+' '+(c>1?'cebolas':'cebola')+' e '+p+' '+(p>1?'pimentões':'pimentão'));
-  }
-  if(i.nota) sub.push(i.nota);
-  return {qtd, sub:sub.join(' · ')};
+function normalizar(E){
+  const out={aloc:{},extras:[]};
+  const src=(E&&typeof E==='object'&&E.aloc&&typeof E.aloc==='object')?E.aloc:null;
+  ITENS.forEach(i=>{
+    const m=src?(src[i.id]||{}):(SUG[i.id]||{});
+    const o={};
+    FAMILIAS.forEach(f=>{ const n=Math.floor(Number(m[f.id])); if(n>0 && n<1000) o[f.id]=n; });
+    out.aloc[i.id]=o;
+  });
+  const ex=(E&&Array.isArray(E.extras))?E.extras:[];
+  ex.slice(0,60).forEach(e=>{
+    if(!e||typeof e!=='object') return;
+    const nome=String(e.nome||'').trim().slice(0,60); if(!nome) return;
+    const id=String(e.id||'').replace(/[^a-z0-9]/gi,'').slice(0,16)||('x'+Math.random().toString(36).slice(2,8));
+    out.extras.push({id, g:NOME_GRUPO[e.g]?e.g:'outros', nome, qtd:String(e.qtd||'').trim().slice(0,40), obs:String(e.obs||'').trim().slice(0,80), dono:(famPor(e.dono)||e.dono===FORA)?e.dono:FORA});
+  });
+  return out;
 }
-const itensDa = id => TODOS.filter(i=>DONO[i.id]===id);
-const famPor = id => FAMILIAS.find(f=>f.id===id);
-const rotuloItem = i => i.nome+(i.g==='tarde'?' (tarde)':'');
 
-/* ---------- estado de cada celular ---------- */
-const KEY='lista-chacara-v2';
-let st={fam:null, ok:{}, notas:{}};
+/* ---------- link da distribuição (?d=...) ---------- */
+const b64=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const deB64=s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))));
+function codificar(E){
+  const a=ITENS.map(i=>{ const m=E.aloc[i.id]||{}; const p=FAMILIAS.filter(f=>m[f.id]).map(f=>COD[f.id]+m[f.id]).join(''); return p?i.id+':'+p:''; }).filter(Boolean).join('|');
+  let s='1~'+a;
+  if(E.extras.length) s+='~'+b64(JSON.stringify(E.extras.map(e=>[e.id,e.g,e.nome,e.qtd,e.obs,e.dono])));
+  return s;
+}
+function decodificar(s){
+  try{
+    const partes=String(s).split('~');
+    if(partes[0]!=='1') return null;
+    const aloc={};
+    (partes[1]||'').split('|').forEach(par=>{
+      const k=par.indexOf(':'); if(k<1) return;
+      const id=par.slice(0,k); if(!ITEM[id]) return;
+      const m={}; const re=/([a-z])(\d+)/g; let r; const resto=par.slice(k+1);
+      while((r=re.exec(resto))){ const f=DECOD[r[1]]; if(f) m[f]=Number(r[2]); }
+      aloc[id]=m;
+    });
+    let extras=[];
+    if(partes[2]) extras=JSON.parse(deB64(partes[2])).map(a=>({id:a[0],g:a[1],nome:a[2],qtd:a[3],obs:a[4],dono:a[5]}));
+    return normalizar({aloc,extras});
+  }catch(e){ return null; }
+}
+function hashStr(s){ let h=5381; for(let k=0;k<s.length;k++) h=((h<<5)+h+s.charCodeAt(k))|0; return (h>>>0).toString(36); }
+function emClaude(){ return !!(window.claude && window.claude.use); }
+function linkDistribuicao(){
+  const base=(/^https?:$/.test(location.protocol) && !emClaude()) ? location.origin+location.pathname : SITE;
+  return base+'?d='+encodeURIComponent(codificar(ESTADO));
+}
+
+/* ---------- estado ---------- */
+let VEIO_DE_LINK=null;
+try{ const d=new URLSearchParams(location.search).get('d'); if(d) VEIO_DE_LINK=decodificar(d); }catch(e){}
+ESTADO = VEIO_DE_LINK || normalizar(ESTADO);
+const ORIGINAL = JSON.stringify(ESTADO);
+const SUGERIDO = JSON.stringify(normalizar({}));
+const KEY_MUD = 'lista-chacara-dist-v3' + (VEIO_DE_LINK ? '-'+hashStr(ORIGINAL) : '');
+try{ const l=JSON.parse(localStorage.getItem(KEY_MUD)||'null'); if(l && typeof l==='object') ESTADO=normalizar(l); }catch(e){}
+
+const KEY='lista-chacara-v3';
+let st={fam:null, ok:{}, notas:{}, so:false};
 try{ const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s) st={...st,...s}; }catch(e){}
 const salvar=()=>{ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} };
 { const h=(location.hash||'').slice(1); if(famPor(h)) st.fam=h; }
 
+/* ---------- contas ---------- */
+const nf = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:1});
+const al = id => ESTADO.aloc[id] || (ESTADO.aloc[id]={});
+const totalUn = i => Object.values(al(i.id)).reduce((s,n)=>s+n,0);
+const consumo = i => PESSOAS*i.pp;
+const recUn = i => Math.max(1, Math.ceil(consumo(i)*FATOR/i.por - 1e-9));
+function fmtUn(i,n){ const v=i.mult?n*i.mult:n; return v+' '+(v===1?i.un[0]:i.un[1]); }
+function curto(i,n){ const v=i.mult?n*i.mult:n; return v+' '+(v===1?i.un[0]:i.un[1]).split(' de ')[0]; }
+function medida(i,q){
+  q=Math.max(0,q);
+  if(i.med==='g') return q>=1000 ? nf.format(Math.round(q/100)/10)+' kg' : (Math.round(q/10)*10)+' g';
+  if(i.med==='ml') return q>=1000 ? nf.format(Math.round(q/100)/10)+' L' : (Math.round(q/50)*50)+' ml';
+  const n=Math.round(q);
+  if(i.med==='fatia') return n+(n===1?' fatia':' fatias');
+  return n+' '+(n===1?i.rot[0]:i.rot[1]);
+}
+const ROT_ST={ok:'Certo',warn:'Justo',bad:'Vai faltar',info:'Vai sobrar'};
+function analisar(i){
+  const tot=totalUn(i), R=recUn(i), A=tot*i.por, C=consumo(i);
+  if(tot===0) return {st:'bad', rot:'Ninguém leva', det:'Ninguém leva ainda. Precisa de '+fmtUn(i,R)+'.'};
+  if(A < C-1e-9) return {st:'bad', rot:ROT_ST.bad, det:'Faltam '+fmtUn(i,R-tot)+' para chegar ao recomendado. Do jeito que está, falta cerca de '+medida(i,C-A)+'.'};
+  if(tot < R) return {st:'warn', rot:ROT_ST.warn, det:'Dá para todos, mas sobra pouco (cerca de '+medida(i,A-C)+'). O ideal seria mais '+fmtUn(i,R-tot)+'.'};
+  if(tot === R) return {st:'ok', rot:ROT_ST.ok, det:'Sobra prevista: cerca de '+medida(i,A-C)+'.'};
+  return {st:'info', rot:ROT_ST.info, det:'Passou '+fmtUn(i,tot-R)+' do recomendado. Sobra prevista: cerca de '+medida(i,A-C)+'.'};
+}
+const rotuloItem = i => i.nome+(i.g==='tarde'?' (tarde)':'');
+function lista(a){ return a.length<=1 ? (a[0]||'') : a.slice(0,-1).join(', ')+' e '+a[a.length-1]; }
+function resumoNomes(a){ return a.length>4 ? a.slice(0,4).join(', ')+' e mais '+(a.length-4) : lista(a); }
+function quemTxt(i){ const m=al(i.id); return FAMILIAS.filter(f=>m[f.id]).map(f=>nomeCurto(f)+' '+curto(i,m[f.id])).join(', '); }
+function daFamilia(fid){
+  const r=[];
+  GRUPOS.forEach(([g])=>{
+    ITENS.filter(i=>i.g===g).forEach(i=>{ const n=al(i.id)[fid]; if(n) r.push({i,n,g}); });
+    ESTADO.extras.filter(e=>e.g===g && e.dono===fid).forEach(e=>r.push({i:e,n:0,g,extra:true}));
+  });
+  return r;
+}
+const qtdTxt = x => x.extra ? (x.i.qtd||'') : fmtUn(x.i,x.n);
+function subTxt(x,fid){
+  if(x.extra) return x.i.obs||'';
+  const outros=FAMILIAS.filter(f=>f.id!==fid && al(x.i.id)[f.id]);
+  const s=[]; if(x.i.nota) s.push(x.i.nota);
+  if(outros.length) s.push('o total é '+curto(x.i,totalUn(x.i))+', junto com '+lista(outros.map(nomeCurto)));
+  return s.join(' · ');
+}
+function analiseGeral(){
+  const res=ITENS.map(i=>({i,a:analisar(i)}));
+  const c={ok:0,warn:0,bad:0,info:0}; res.forEach(r=>c[r.a.st]++);
+  const nomes=s=>res.filter(r=>r.a.st===s).map(r=>rotuloItem(r.i));
+  let v;
+  if(c.bad) v={st:'bad', t:(c.bad===1?'1 item vai faltar: ':c.bad+' itens vão faltar: ')+resumoNomes(nomes('bad'))+'.'};
+  else if(c.warn) v={st:'warn', t:'Nada vai faltar, mas '+(c.warn===1?'1 item está':c.warn+' itens estão')+' sem folga: '+resumoNomes(nomes('warn'))+'.'};
+  else if(c.info) v={st:'info', t:'Nada vai faltar. '+(c.info===1?'1 item vai':c.info+' itens vão')+' sobrar além do normal: '+resumoNomes(nomes('info'))+'.'};
+  else v={st:'ok', t:'Tudo distribuído e na medida certa.'};
+  return {res,c,v};
+}
+function pesos(){
+  const custo={}; let tot=0;
+  FAMILIAS.forEach(f=>custo[f.id]=0);
+  ITENS.forEach(i=>Object.entries(al(i.id)).forEach(([f,n])=>{ custo[f]+=n*i.preco; tot+=n*i.preco; }));
+  return FAMILIAS.map(f=>{
+    const g=tot?custo[f.id]/tot:0, p=f.membros.length/PESSOAS, r=p?g/p:0;
+    const s = g===0?'bad' : r>1.4?'warn' : r<0.6?'info' : 'ok';
+    const rot = g===0?'sem itens' : r>1.4?'acima do esperado' : r<0.6?'abaixo do esperado' : 'equilibrado';
+    return {f,g,p,st:s,rot};
+  });
+}
+const pct = x => Math.round(x*100)+'%';
+
+/* ---------- interface ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const ICON_PDF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
-const ICON_COPY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
-
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>t.hidden=true,2800); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>t.hidden=true,3000); }
 
 function renderEscolha(){
   const box=$('#escolha'); box.innerHTML='';
@@ -729,7 +868,7 @@ function renderEscolha(){
     const b=document.createElement('button');
     b.type='button'; b.className='fam-btn'; b.style.setProperty('--c','var('+f.cor+')');
     b.setAttribute('aria-pressed', String(st.fam===f.id));
-    b.innerHTML='<b>'+esc(f.nome.replace('Família ',''))+'</b><span>'+f.membros.map(esc).join(', ')+'</span>';
+    b.innerHTML='<b>'+esc(nomeCurto(f))+'</b><span>'+f.membros.map(esc).join(', ')+'</span>';
     b.onclick=()=>escolher(f.id);
     box.appendChild(b);
   });
@@ -742,33 +881,30 @@ function escolher(id){
 }
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(famPor(h) && h!==st.fam){ st.fam=h; salvar(); renderEscolha(); renderMinha(); } });
 
-function contaOk(f){ const its=itensDa(f.id), ok=st.ok[f.id]||{}; return {n:its.filter(i=>ok[i.id]).length, total:its.length}; }
+function contaOk(f){ const its=daFamilia(f.id), ok=st.ok[f.id]||{}; return {n:its.filter(x=>ok[x.i.id]).length, total:its.length}; }
 
 function renderMinha(){
   const box=$('#minha'); box.innerHTML='';
-  if(!st.fam){ box.innerHTML='<div class="dica">Toque no nome da sua família acima para ver o que vocês vão levar.</div>'; return; }
+  if(!st.fam){ box.innerHTML='<p class="dica">Toque no seu nome ou no nome da sua família para ver o que vocês vão levar.</p>'; return; }
   const f=famPor(st.fam);
   const ok=st.ok[f.id]||(st.ok[f.id]={});
   const card=document.createElement('article'); card.className='cartao'; card.style.setProperty('--c','var('+f.cor+')');
   card.innerHTML='<div class="cartao-topo"><h2>'+esc(f.nome)+'</h2><p>'+f.membros.map(esc).join(', ')+'</p></div>';
   const corpo=document.createElement('div'); corpo.className='cartao-corpo';
-  const its=itensDa(f.id);
-  if(!its.length){
-    corpo.innerHTML='<p class="dica" style="margin-top:14px">Nada para levar por enquanto.</p>';
-    card.appendChild(corpo); box.appendChild(card); return;
-  }
+  const its=daFamilia(f.id);
+  if(!its.length){ corpo.innerHTML='<p class="dica" style="margin-top:14px">Nada para levar por enquanto.</p>'; card.appendChild(corpo); box.appendChild(card); return; }
   const prog=document.createElement('div'); prog.className='progresso';
   prog.innerHTML='<div class="barra"><i id="barra"></i></div><small id="contador"></small><button type="button" class="link-btn" id="marcarTudo"></button>';
   corpo.appendChild(prog);
   GRUPOS.forEach(([g,nomeG])=>{
-    const doGrupo=its.filter(i=>i.g===g); if(!doGrupo.length) return;
+    const doGrupo=its.filter(x=>x.g===g); if(!doGrupo.length) return;
     const gr=document.createElement('div'); gr.className='grupo';
     gr.innerHTML='<div class="grupo-nome">'+esc(nomeG)+'</div>';
-    doGrupo.forEach(i=>{
-      const r=calcular(i);
-      const lab=document.createElement('label'); lab.className='item'+(ok[i.id]?' ok':'');
-      lab.innerHTML='<input type="checkbox" id="ck-'+esc(i.id)+'"'+(ok[i.id]?' checked':'')+'><span class="nome">'+esc(i.nome)+'</span><span class="qtd">'+esc(r.qtd)+'</span>'+(r.sub?'<span class="sub">'+esc(r.sub)+'</span>':'');
-      lab.querySelector('input').onchange=e=>{ ok[i.id]=e.target.checked; lab.classList.toggle('ok',e.target.checked); salvar(); atualizarProgresso(); renderResumo(); };
+    doGrupo.forEach(x=>{
+      const sub=subTxt(x,f.id), id=x.i.id;
+      const lab=document.createElement('label'); lab.className='item'+(ok[id]?' ok':'');
+      lab.innerHTML='<input type="checkbox" id="ck-'+esc(id)+'"'+(ok[id]?' checked':'')+'><span class="nome">'+esc(x.i.nome)+'</span><span class="qtd">'+esc(qtdTxt(x))+'</span>'+(sub?'<span class="sub">'+esc(sub)+'</span>':'');
+      lab.querySelector('input').onchange=e=>{ ok[id]=e.target.checked; lab.classList.toggle('ok',e.target.checked); salvar(); atualizarProgresso(); renderResumo(); };
       gr.appendChild(lab);
     });
     corpo.appendChild(gr);
@@ -779,13 +915,13 @@ function renderMinha(){
   ta.oninput=()=>{ st.notas[f.id]=ta.value; clearTimeout(ta.t); ta.t=setTimeout(salvar,300); };
   corpo.appendChild(nota);
   const acoes=document.createElement('div'); acoes.className='acoes';
-  const bPdf=document.createElement('button'); bPdf.type='button'; bPdf.className='btn cheio'; bPdf.innerHTML=ICON_PDF+'Baixar PDF da família';
+  const bPdf=document.createElement('button'); bPdf.type='button'; bPdf.className='btn cheio'; bPdf.innerHTML=ICON_PDF+'Baixar PDF';
   bPdf.onclick=()=>baixar(bPdf, ()=>pdfFamilia(f), 'Lista-'+semAcento(f.nome).replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.pdf');
   const bCp=document.createElement('button'); bCp.type='button'; bCp.className='btn'; bCp.innerHTML=ICON_COPY+'Copiar para o WhatsApp';
-  bCp.onclick=()=>copiar(textoFamilia(f));
+  bCp.onclick=()=>copiar(textoFamilia(f),'Lista copiada. É só colar no WhatsApp.');
   acoes.append(bPdf,bCp); corpo.appendChild(acoes);
   card.appendChild(corpo); box.appendChild(card);
-  $('#marcarTudo').onclick=()=>{ const c=contaOk(f); const marcar=c.n<c.total; itensDa(f.id).forEach(i=>ok[i.id]=marcar); salvar(); renderMinha(); renderResumo(); };
+  $('#marcarTudo').onclick=()=>{ const c=contaOk(f); const marcar=c.n<c.total; daFamilia(f.id).forEach(x=>ok[x.i.id]=marcar); salvar(); renderMinha(); renderResumo(); };
   atualizarProgresso();
 }
 function atualizarProgresso(){
@@ -799,72 +935,76 @@ function renderResumo(){
   const box=$('#resumo'); box.innerHTML='';
   FAMILIAS.forEach(f=>{
     const b=document.createElement('button'); b.type='button'; b.className='mini'; b.style.setProperty('--c','var('+f.cor+')');
-    const c=contaOk(f); const its=itensDa(f.id);
+    const c=contaOk(f); const its=daFamilia(f.id);
     b.innerHTML='<div><h3>'+esc(f.nome)+'</h3><div class="membros">'+f.membros.map(esc).join(', ')+(c.n?' · '+c.n+' de '+c.total+' garantidos':'')+'</div></div>'+
-      (its.length?'<ul>'+its.map(i=>'<li><span>'+esc(i.nome)+(i.g==='tarde'?' <small>(tarde)</small>':'')+'</span><span>'+esc(calcular(i).qtd)+'</span></li>').join('')+'</ul>':'<p class="vazio-fam">Nada para levar por enquanto.</p>');
+      (its.length?'<ul>'+its.map(x=>'<li><span>'+esc(x.i.nome)+(x.g==='tarde'?' <small>(tarde)</small>':'')+'</span><span>'+esc(qtdTxt(x))+'</span></li>').join('')+'</ul>':'<p class="vazio-fam">Nada para levar por enquanto.</p>');
     b.onclick=()=>escolher(f.id);
     box.appendChild(b);
   });
 }
 
-function textoFamilia(f){
-  const ok=st.ok[f.id]||{};
-  const l=['*'+f.nome+'* ('+f.membros.join(', ')+')'];
-  GRUPOS.forEach(([g,nome])=>{
-    const its=itensDa(f.id).filter(i=>i.g===g); if(!its.length) return;
-    l.push('','_'+nome+'_');
-    its.forEach(i=>{ const r=calcular(i); l.push((ok[i.id]?'✅':'▫️')+' '+i.nome+(r.qtd?': '+r.qtd:'')+(r.sub?' ('+r.sub+')':'')); });
+/* Distribuir */
+function pintarLinha(el,i){
+  const a=analisar(i), m=al(i.id), tot=totalUn(i), R=recUn(i);
+  el.dataset.st=a.st;
+  let h='<div class="d-top"><div class="d-nome"><b>'+esc(rotuloItem(i))+'</b><small>recomendado: '+esc(fmtUn(i,R))+'</small></div><span class="pill" title="'+esc(a.rot)+'">'+esc((i.mult?tot*i.mult:tot)+' de '+fmtUn(i,R))+'</span></div><div class="d-chips">';
+  FAMILIAS.forEach(f=>{
+    const n=m[f.id]; if(!n) return;
+    const nc=esc(nomeCurto(f));
+    h+='<span class="cf" style="--c:var('+f.cor+')"><span class="cf-nome">'+nc+'</span><button type="button" data-a="-" data-f="'+f.id+'" aria-label="Menos '+esc(i.nome)+' para '+nc+'">−</button><output>'+esc(curto(i,n))+'</output><button type="button" data-a="+" data-f="'+f.id+'" aria-label="Mais '+esc(i.nome)+' para '+nc+'">+</button></span>';
   });
-  if((st.notas[f.id]||'').trim()) l.push('','Obs.: '+st.notas[f.id].trim());
-  return l.join('\n');
+  const livres=FAMILIAS.filter(f=>!m[f.id]);
+  if(livres.length) h+='<select class="d-add" id="add-'+esc(i.id)+'" aria-label="Incluir outro grupo para levar '+esc(rotuloItem(i))+'"><option value="">+ quem leva</option>'+livres.map(f=>'<option value="'+f.id+'">'+esc(nomeCurto(f))+'</option>').join('')+'</select>';
+  h+='</div>';
+  el.innerHTML=h;
 }
-async function copiar(txt){
-  try{ await navigator.clipboard.writeText(txt); toast('Lista copiada. É só colar no WhatsApp.'); }
-  catch(e){
-    const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
-    let feito=false; try{ feito=document.execCommand('copy'); }catch(_){}
-    ta.remove(); toast(feito?'Lista copiada. É só colar no WhatsApp.':'Não deu para copiar aqui. Tente pelo navegador do celular.');
-  }
-}
-const semAcento=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
-
-/* ---------- Organizar (só o dono) ---------- */
-let ART=null;
 function opcoesFamilia(sel){
-  return FAMILIAS.map(f=>'<option value="'+f.id+'"'+(sel===f.id?' selected':'')+'>'+esc(f.nome)+'</option>').join('')+
-    '<option value="'+FORA+'"'+(sel===FORA?' selected':'')+'>Ninguém (tirar da lista)</option>';
+  return FAMILIAS.map(f=>'<option value="'+f.id+'"'+(sel===f.id?' selected':'')+'>'+esc(nomeCurto(f))+'</option>').join('')+
+    '<option value="'+FORA+'"'+(sel===FORA?' selected':'')+'>Ninguém (tirar)</option>';
 }
-function corDe(id){ const f=famPor(id); return f?'var('+f.cor+')':'var(--line)'; }
-function renderOrg(){
+function renderDist(){
   const box=$('#orgLista'); box.innerHTML='';
   GRUPOS.forEach(([g,nomeG])=>{
-    const its=TODOS.filter(i=>i.g===g); if(!its.length) return;
+    const its=ITENS.filter(i=>i.g===g); if(!its.length) return;
     const gr=document.createElement('div'); gr.className='org-grupo';
     gr.innerHTML='<h3>'+esc(nomeG)+'</h3>';
-    its.forEach(i=>{
-      const d=DONO[i.id]; const r=calcular(i);
-      const mudou = d!==DONO_ORIG[i.id];
-      const ln=document.createElement('div');
-      ln.className='org-linha'+(d===FORA?' fora':'')+(mudou?' mudou':'');
-      ln.style.setProperty('--c', corDe(d));
-      ln.innerHTML='<div class="o-nome"><b>'+esc(i.nome)+'</b><small>'+esc(r.qtd||'sem quantidade')+(i.extra?' · item adicionado':'')+'</small></div>'+
-        '<div class="o-sel"><select id="sel-'+esc(i.id)+'" aria-label="Quem leva '+esc(rotuloItem(i))+'">'+opcoesFamilia(d)+'</select>'+
-        (i.extra?'<button type="button" class="x-btn" title="Apagar item" aria-label="Apagar '+esc(i.nome)+'">✕</button>':'')+'</div>';
-      ln.querySelector('select').onchange=e=>{
-        const v=e.target.value;
-        if(i.extra){ const ex=ESTADO.extras.find(x=>x.id===i.id); if(ex) ex.dono=v; }
-        else if(v===PADRAO[i.id]) delete ESTADO.dono[i.id]; else ESTADO.dono[i.id]=v;
-        mudouEstado(); toast(rotuloItem(i)+': agora '+(famPor(v)?famPor(v).nome+' leva':'ninguém leva'));
-      };
-      const x=ln.querySelector('.x-btn');
-      if(x) x.onclick=()=>{ ESTADO.extras=ESTADO.extras.filter(e=>e.id!==i.id); mudouEstado(); toast(i.nome+' apagado da lista'); };
+    its.forEach(i=>{ const el=document.createElement('div'); el.className='d-item'; el.id='d-'+i.id; pintarLinha(el,i); gr.appendChild(el); });
+    box.appendChild(gr);
+  });
+  if(ESTADO.extras.length){
+    const gr=document.createElement('div'); gr.className='org-grupo';
+    gr.innerHTML='<h3>Itens adicionados</h3>';
+    ESTADO.extras.forEach(e=>{
+      const ln=document.createElement('div'); ln.className='org-linha';
+      const f=famPor(e.dono); ln.style.setProperty('--c', f?'var('+f.cor+')':'var(--line)');
+      ln.innerHTML='<div class="o-nome"><b>'+esc(e.nome)+'</b><small>'+esc([e.qtd||'sem quantidade', NOME_GRUPO[e.g]].join(' · '))+'</small></div>'+
+        '<div class="o-sel"><select id="ex-'+esc(e.id)+'" aria-label="Quem leva '+esc(e.nome)+'">'+opcoesFamilia(e.dono)+'</select><button type="button" class="x-btn" aria-label="Apagar '+esc(e.nome)+'">✕</button></div>';
+      ln.querySelector('select').onchange=ev=>{ e.dono=ev.target.value; mudouEstado(); };
+      ln.querySelector('.x-btn').onclick=()=>{ ESTADO.extras=ESTADO.extras.filter(x=>x.id!==e.id); mudouEstado(); toast(e.nome+' apagado da lista'); };
       gr.appendChild(ln);
     });
     box.appendChild(gr);
-  });
+  }
 }
+$('#orgLista').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]'); if(!b) return;
+  const row=b.closest('.d-item'); const i=ITEM[row.id.slice(2)]; if(!i) return;
+  const m=al(i.id), f=b.dataset.f;
+  m[f]=(m[f]||0)+(b.dataset.a==='+'?1:-1); if(m[f]<=0) delete m[f];
+  mudouEstado(i);
+  const igual=row.querySelector('button[data-a="'+b.dataset.a+'"][data-f="'+f+'"]') || row.querySelector('select.d-add');
+  if(igual) igual.focus();
+});
+$('#orgLista').addEventListener('change',e=>{
+  const s=e.target.closest('select.d-add'); if(!s || !s.value) return;
+  const row=s.closest('.d-item'); const i=ITEM[row.id.slice(2)]; if(!i) return;
+  const falta=recUn(i)-totalUn(i);
+  al(i.id)[s.value]=Math.max(1,falta);
+  mudouEstado(i);
+  const novo=row.querySelector('button[data-a="+"][data-f="'+s.value+'"]'); if(novo) novo.focus();
+});
 function prepararNovo(){
-  $('#addFam').innerHTML=FAMILIAS.map(f=>'<option value="'+f.id+'">'+esc(f.nome)+'</option>').join('');
+  $('#addFam').innerHTML=FAMILIAS.map(f=>'<option value="'+f.id+'">'+esc(nomeCurto(f))+'</option>').join('');
   $('#addGrupo').innerHTML=GRUPOS.map(([g,n])=>'<option value="'+g+'"'+(g==='outros'?' selected':'')+'>'+esc(n)+'</option>').join('');
   $('#addBtn').onclick=()=>{
     const nome=$('#addNome').value.trim();
@@ -872,43 +1012,119 @@ function prepararNovo(){
     const novo={id:'x'+Date.now().toString(36), g:$('#addGrupo').value, nome, qtd:$('#addQtd').value.trim(), obs:$('#addObs').value.trim(), dono:$('#addFam').value};
     ESTADO.extras.push(novo);
     ['#addNome','#addQtd','#addObs'].forEach(s=>$(s).value='');
-    mudouEstado(); toast(nome+' adicionado: '+famPor(novo.dono).nome+' leva');
+    mudouEstado(); toast(nome+' adicionado: '+nomeCurto(famPor(novo.dono))+' leva');
   };
 }
-function contarMudancas(){
-  const ids=new Set([...Object.keys(DONO_ORIG), ...Object.keys(DONO)]);
-  let n=0; ids.forEach(k=>{ const a=DONO_ORIG[k]===undefined?FORA:DONO_ORIG[k], b=DONO[k]===undefined?FORA:DONO[k]; if(a!==b) n++; });
-  const o=JSON.parse(ORIGINAL).extras||[];
-  ESTADO.extras.forEach(e=>{ const x=o.find(y=>y.id===e.id); if(x && (x.nome!==e.nome||x.qtd!==e.qtd||x.obs!==e.obs||x.g!==e.g) && x.dono===e.dono) n++; });
-  return n;
+
+/* Relatório */
+function renderRelatorio(){
+  const {res,c,v}=analiseGeral();
+  $('#placar').innerHTML=[['ok','Certos'],['warn','Justos'],['bad','Vão faltar'],['info','Vão sobrar']]
+    .map(([s,t])=>'<div class="pl st-'+s+'"><b>'+c[s]+'</b><span>'+t+'</span></div>').join('');
+  const ve=$('#veredito'); ve.textContent=v.t; ve.dataset.st=v.st;
+  $('#soAtencao').checked=!!st.so;
+  const box=$('#relLista'); box.innerHTML='';
+  let algum=false;
+  GRUPOS.forEach(([g,nomeG])=>{
+    const rs=res.filter(r=>r.i.g===g && (!st.so || r.a.st!=='ok')); if(!rs.length) return;
+    algum=true;
+    const gr=document.createElement('div'); gr.className='org-grupo';
+    gr.innerHTML='<h3>'+esc(nomeG)+'</h3>'+rs.map(r=>{
+      const i=r.i, tot=totalUn(i);
+      return '<div class="r-item" data-st="'+r.a.st+'"><b>'+esc(i.nome)+'</b><span class="pill">'+esc(r.a.rot)+'</span>'+
+        '<span class="r-l forte">'+esc((i.mult?tot*i.mult:tot)+' de '+fmtUn(i,recUn(i)))+(tot?' · '+quemTxt(i):'')+'</span>'+
+        '<span class="r-l">'+esc(r.a.det)+'</span></div>';
+    }).join('');
+    box.appendChild(gr);
+  });
+  const extras=ESTADO.extras;
+  if(extras.length && !st.so){
+    algum=true;
+    const gr=document.createElement('div'); gr.className='org-grupo';
+    gr.innerHTML='<h3>Itens adicionados (sem cálculo)</h3>'+extras.map(e=>{ const f=famPor(e.dono);
+      return '<div class="r-item" data-st="'+(f?'ok':'bad')+'"><b>'+esc(e.nome)+'</b><span class="pill">'+esc(f?nomeCurto(f):'Ninguém leva')+'</span><span class="r-l">'+esc([e.qtd,e.obs].filter(Boolean).join(' · ')||'sem quantidade')+'</span></div>'; }).join('');
+    box.appendChild(gr);
+  }
+  if(!algum) box.innerHTML='<p class="r-vazio">Nada precisa de atenção. Está tudo certo.</p>';
+  const ps=pesos(); const max=Math.max(...ps.map(p=>Math.max(p.g,p.p)),0.01);
+  $('#peso').innerHTML=ps.map(p=>'<div class="peso-l" style="--c:var('+p.f.cor+')"><div><b>'+esc(nomeCurto(p.f))+'</b><small>'+(p.f.membros.length===1?'1 pessoa':p.f.membros.length+' pessoas')+' ('+pct(p.p)+' do total) · cerca de '+pct(p.g)+' do gasto</small></div>'+
+    '<span class="pill st-'+p.st+'">'+esc(p.rot)+'</span><div class="peso-barra" aria-hidden="true"><i style="width:'+(p.g/max*100).toFixed(1)+'%"></i><u style="left:'+(p.p/max*100).toFixed(1)+'%"></u></div></div>').join('');
 }
+$('#soAtencao').onchange=e=>{ st.so=e.target.checked; salvar(); renderRelatorio(); };
+
+function textoFamilia(f){
+  const ok=st.ok[f.id]||{};
+  const l=['*'+f.nome+'* ('+f.membros.join(', ')+')'];
+  const its=daFamilia(f.id);
+  GRUPOS.forEach(([g,nome])=>{
+    const doGrupo=its.filter(x=>x.g===g); if(!doGrupo.length) return;
+    l.push('','_'+nome+'_');
+    doGrupo.forEach(x=>{ const q=qtdTxt(x), s=subTxt(x,f.id); l.push((ok[x.i.id]?'✅':'▫️')+' '+x.i.nome+(q?': '+q:'')+(s?' ('+s+')':'')); });
+  });
+  if(!its.length) l.push('','Nada para levar por enquanto.');
+  if((st.notas[f.id]||'').trim()) l.push('','Obs.: '+st.notas[f.id].trim());
+  return l.join('\n');
+}
+async function copiar(txt,msg){
+  try{ await navigator.clipboard.writeText(txt); toast(msg); }
+  catch(e){
+    const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    let feito=false; try{ feito=document.execCommand('copy'); }catch(_){}
+    ta.remove(); toast(feito?msg:'Não deu para copiar aqui. Tente pelo navegador do celular.');
+  }
+}
+const semAcento=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+/* ---------- mudanças, link e "salvar para todos" ---------- */
+let ART=null;
 function atualizarAvisos(){
-  const n = JSON.stringify(ESTADO)===ORIGINAL ? 0 : Math.max(1,contarMudancas());
-  $('#orgAviso').hidden = n===0;
-  $('#orgAvisoTxt').textContent = n===1 ? '1 mudança feita neste aparelho' : n+' mudanças feitas neste aparelho';
-  const barra = !!ART && n>0;
+  const atual=JSON.stringify(ESTADO);
+  const mudou = atual!==ORIGINAL;
+  $('#orgAviso').hidden = !mudou && atual===SUGERIDO;
+  if(VEIO_DE_LINK){
+    $('#orgAvisoTxt').textContent = mudou ? 'Você mudou a distribuição que veio pelo link.' : 'Você está vendo a distribuição que veio pelo link.';
+    $('#voltarBtn').textContent = mudou ? 'Voltar à versão do link' : 'Ver a divisão sugerida';
+    $('#voltarBtn').hidden = !mudou && atual===SUGERIDO;
+  }else{
+    $('#orgAvisoTxt').textContent = 'A distribuição foi mudada neste aparelho.';
+    $('#voltarBtn').textContent = 'Voltar à divisão sugerida';
+    $('#voltarBtn').hidden = false;
+  }
+  const barra = !!ART && mudou;
   $('#salvarBarra').hidden = !barra;
   $('#wrap').classList.toggle('com-barra', barra);
-  $('#salvarTxt').textContent = n===1 ? '1 mudança ainda não salva para o grupo' : n+' mudanças ainda não salvas para o grupo';
 }
 function guardarMudancas(){
   try{
     if(JSON.stringify(ESTADO)===ORIGINAL) localStorage.removeItem(KEY_MUD);
-    else localStorage.setItem(KEY_MUD, JSON.stringify({base:ORIGINAL, estado:ESTADO}));
+    else localStorage.setItem(KEY_MUD, JSON.stringify(ESTADO));
   }catch(e){}
 }
-function mudouEstado(){
-  aplicarEstado(); guardarMudancas(); renderOrg(); renderMinha(); renderResumo(); atualizarAvisos();
+function mudouEstado(i){
+  ESTADO=normalizar(ESTADO); guardarMudancas();
+  if(i){ const el=document.getElementById('d-'+i.id); if(el) pintarLinha(el,i); else renderDist(); }
+  else renderDist();
+  renderMinha(); renderResumo(); renderRelatorio(); atualizarAvisos();
 }
-function voltarOriginal(){ ESTADO=JSON.parse(ORIGINAL); mudouEstado(); toast('A lista voltou ao original.'); }
-$('#desfazerBtn').onclick=voltarOriginal;
-$('#voltarBtn').onclick=voltarOriginal;
+$('#voltarBtn').onclick=()=>{
+  if(VEIO_DE_LINK && JSON.stringify(ESTADO)!==ORIGINAL){ ESTADO=JSON.parse(ORIGINAL); toast('Voltou à versão do link.'); }
+  else { ESTADO=JSON.parse(SUGERIDO); toast('Voltou à divisão sugerida.'); }
+  mudouEstado();
+};
+$('#zerarBtn').onclick=()=>{
+  const b=$('#zerarBtn');
+  if(!b.dataset.conf){ b.dataset.conf='1'; b.textContent='Toque de novo para zerar tudo'; clearTimeout(b.t); b.t=setTimeout(()=>{ delete b.dataset.conf; b.textContent='Começar do zero'; },4000); return; }
+  delete b.dataset.conf; b.textContent='Começar do zero';
+  ESTADO={aloc:{},extras:ESTADO.extras}; mudouEstado(); toast('Distribuição zerada. Agora é só dividir os itens.');
+};
+$('#desfazerBtn').onclick=()=>{ ESTADO=JSON.parse(ORIGINAL); mudouEstado(); toast('Mudanças desfeitas.'); };
+['#linkBtn1','#linkBtn2'].forEach(s=>{ $(s).innerHTML=ICON_LINK+'Copiar link desta distribuição'; $(s).onclick=()=>copiar(linkDistribuicao(),'Link copiado. Quem abrir vai ver exatamente esta distribuição.'); });
 $('#salvarBtn').onclick=async()=>{
   if(!ART){ toast('Salvar só funciona para quem criou a lista.'); return; }
   const b=$('#salvarBtn'); b.disabled=true; b.textContent='Salvando…';
   const json=JSON.stringify(ESTADO).replace(/</g,'\\u003c');
   const html=ESQUELETO+CABECA+'<script>('+app.toString()+')('+json+');<\/script></body></html>';
-  try{ await ART.publish(html); b.textContent='Salvo! Atualizando…'; }
+  try{ await ART.publish(html); b.textContent='Salvo! Atualizando…'; try{ localStorage.removeItem(KEY_MUD); }catch(e){} }
   catch(e){
     b.disabled=false; b.textContent='Salvar para todos';
     const c=e&&e.code;
@@ -920,16 +1136,18 @@ $('#salvarBtn').onclick=async()=>{
 };
 (async()=>{
   try{
-    if(!window.claude || !window.claude.use) return;
+    if(!emClaude()) return;
     const [u,a]=await Promise.all([window.claude.use('user'), window.claude.use('artifact')]);
-    if(u && a && await u.canEdit()){ ART=a; $('#orgTxt').innerHTML='Escolha quem leva cada item, tire itens ou adicione novos. As mudanças já aparecem para você aqui; para o grupo ver, toque em <b>Salvar para todos</b>.'; atualizarAvisos(); }
+    if(u && a && await u.canEdit()){ ART=a; atualizarAvisos(); }
   }catch(e){}
 })();
 
 /* ---------- PDF ---------- */
 const W=595.28, H=841.89, M=46;
 const P={tinta:[27,38,32], cinza:[104,116,109], linha:[214,222,211], verde:[24,52,40], ouro:[201,164,82], claro:[206,222,212], papel:[246,248,243]};
+const STC={ok:[47,125,79], warn:[168,106,12], bad:[179,55,47], info:[47,99,144]};
 const rgb=h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));
+const COR_GERAL=rgb('#b4502b');
 function faixaXadrez(doc,y,cor){
   const t=7;
   doc.setFillColor(...cor); for(let x=0;x<W;x+=t*2) doc.rect(x,y,t,t,'F');
@@ -951,6 +1169,11 @@ function cabecalhoCont(doc,titulo,cor){
   doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255); doc.text(titulo, M, 25);
   return 82;
 }
+function rotuloSecao(doc,txt,y){
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...P.cinza);
+  doc.text(txt.toUpperCase(), M, y, {charSpace:1.4});
+  return y+20;
+}
 function caixa(doc,x,y,cor,marcado){
   doc.setLineWidth(1.2); doc.setDrawColor(...cor);
   if(marcado){ doc.setFillColor(...cor); doc.roundedRect(x,y,12,12,2.5,2.5,'FD');
@@ -960,28 +1183,28 @@ function caixa(doc,x,y,cor,marcado){
 function corpoFamilia(doc,f,y){
   const cor=rgb(f.hex), ok=st.ok[f.id]||{};
   const novaPag=()=>{ doc.addPage(); return cabecalhoCont(doc, f.nome+' (continuação)', cor); };
-  const its=itensDa(f.id);
+  const its=daFamilia(f.id);
   if(!its.length){ doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(...P.cinza); doc.text('Nada para levar por enquanto.', M, y); return y+20; }
   GRUPOS.forEach(([g,nomeG])=>{
-    const doGrupo=its.filter(i=>i.g===g); if(!doGrupo.length) return;
+    const doGrupo=its.filter(x=>x.g===g); if(!doGrupo.length) return;
     if(y>H-140) y=novaPag();
     doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...cor);
     doc.text(nomeG.toUpperCase(), M, y, {charSpace:1.4});
     doc.setDrawColor(...cor); doc.setLineWidth(1.4); doc.line(M, y+7, M+28, y+7);
     doc.setDrawColor(...P.linha); doc.setLineWidth(.6); doc.line(M+30, y+7, W-M, y+7);
     y+=30;
-    doGrupo.forEach(i=>{
-      const r=calcular(i);
+    doGrupo.forEach(x=>{
+      const q=qtdTxt(x), s=subTxt(x,f.id);
       doc.setFont('helvetica','bold'); doc.setFontSize(12);
-      const nomeL=doc.splitTextToSize(i.nome, W-2*M-24-110);
+      const nomeL=doc.splitTextToSize(x.i.nome, W-2*M-24-150);
       doc.setFont('helvetica','normal'); doc.setFontSize(9);
-      const sub=r.sub?doc.splitTextToSize(r.sub, W-2*M-28-90):[];
+      const sub=s?doc.splitTextToSize(s, W-2*M-28):[];
       const alt=16+(nomeL.length-1)*14+sub.length*11.5+12;
       if(y+alt>H-64) y=novaPag()+4;
-      caixa(doc, M, y-10, cor, !!ok[i.id]);
+      caixa(doc, M, y-10, cor, !!ok[x.i.id]);
       doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...P.tinta);
       doc.text(nomeL, M+24, y);
-      if(r.qtd) doc.text(r.qtd, W-M, y, {align:'right'});
+      if(q) doc.text(q, W-M, y, {align:'right'});
       if(sub.length){ doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...P.cinza); doc.text(sub, M+24, y+14+(nomeL.length-1)*14); }
       y+=alt;
       doc.setDrawColor(...P.linha); doc.setLineWidth(.5); doc.setLineDashPattern([1.2,2.6],0);
@@ -1018,34 +1241,126 @@ function rodapes(doc,rotulo){
 const membrosTxt=f=>f.membros.join(', ')+' · '+(f.membros.length===1?'1 pessoa':f.membros.length+' pessoas');
 function pdfFamilia(f){
   const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'});
-  let y=capa(doc,{eyebrow:'Encontro na chácara · quem traz o quê', titulo:f.nome, sub:membrosTxt(f), cor:rgb(f.hex)});
+  const y=capa(doc,{eyebrow:'Encontro na chácara · quem traz o quê', titulo:f.nome, sub:membrosTxt(f), cor:rgb(f.hex)});
   const c=contaOk(f);
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...P.cinza);
-  doc.text(c.total+' itens para levar'+(c.n?' · '+c.n+' já garantidos':''), M, y-14);
+  doc.text(c.total+(c.total===1?' item para levar':' itens para levar')+(c.n?' · '+c.n+' já garantidos':''), M, y-14);
   corpoFamilia(doc,f,y+12);
   rodapes(doc, f.nome+' · Encontro na chácara');
   return doc.output('blob');
 }
+const COLS=[[0,124,'Item'],[124,104,'Recomendado'],[228,62,'Distribuído'],[290,150,'Quem leva'],[440,63,'Situação']];
+function cabTabela(doc,y){
+  doc.setFillColor(...P.verde); doc.rect(M,y-12,W-2*M,19,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+  COLS.forEach(([x,,t])=>doc.text(t.toUpperCase(), M+x+5, y+1, {charSpace:.5}));
+  return y+24;
+}
+function paginasRelatorio(doc){
+  const {c,v}=analiseGeral();
+  doc.addPage();
+  let y=cabecalhoCont(doc,'Relatório da distribuição',COR_GERAL);
+  y=rotuloSecao(doc,'Situação dos '+ITENS.length+' itens',y);
+  const bw=(W-2*M-24)/4;
+  [['ok','Certos'],['warn','Justos'],['bad','Vão faltar'],['info','Vão sobrar']].forEach(([s,t],k)=>{
+    const x=M+k*(bw+8);
+    doc.setFillColor(...P.papel); doc.roundedRect(x,y-6,bw,50,5,5,'F');
+    doc.setFillColor(...STC[s]); doc.rect(x,y-6,bw,3,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(...STC[s]); doc.text(String(c[s]), x+10, y+22);
+    doc.setFontSize(8.5); doc.setTextColor(...P.cinza); doc.text(t, x+10, y+36);
+  });
+  y+=62;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...STC[v.st]);
+  const vl=doc.splitTextToSize(v.t, W-2*M); doc.text(vl, M, y); y+=vl.length*14+14;
+  y=cabTabela(doc,y);
+  const novaPag=()=>{ doc.addPage(); return cabTabela(doc, cabecalhoCont(doc,'Relatório da distribuição (continuação)',COR_GERAL)); };
+  GRUPOS.forEach(([g,nomeG])=>{
+    const its=ITENS.filter(i=>i.g===g); if(!its.length) return;
+    if(y>H-110) y=novaPag();
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...P.cinza);
+    doc.text(nomeG.toUpperCase(), M+5, y, {charSpace:1.2}); y+=14;
+    its.forEach(i=>{
+      const a=analisar(i), tot=totalUn(i);
+      doc.setFontSize(8.8);
+      doc.setFont('helvetica','bold'); const c1=doc.splitTextToSize(i.nome, COLS[0][1]-10);
+      doc.setFont('helvetica','normal');
+      const c2=doc.splitTextToSize(fmtUn(i,recUn(i)), COLS[1][1]-10);
+      const c3=doc.splitTextToSize(tot?curto(i,tot):'nada', COLS[2][1]-10);
+      const c4=doc.splitTextToSize(quemTxt(i)||'ninguém', COLS[3][1]-10);
+      doc.setFont('helvetica','bold'); const c5=doc.splitTextToSize(a.rot, COLS[4][1]-8);
+      const n=Math.max(c1.length,c2.length,c3.length,c4.length,c5.length);
+      if(y+n*11+6>H-58) y=novaPag();
+      doc.setTextColor(...P.tinta); doc.setFont('helvetica','bold'); doc.text(c1, M+COLS[0][0]+5, y);
+      doc.setFont('helvetica','normal'); doc.text(c2, M+COLS[1][0]+5, y); doc.text(c3, M+COLS[2][0]+5, y); doc.text(c4, M+COLS[3][0]+5, y);
+      doc.setFont('helvetica','bold'); doc.setTextColor(...STC[a.st]); doc.text(c5, M+COLS[4][0]+5, y);
+      const fim=y+(n-1)*11+6;
+      doc.setDrawColor(...P.linha); doc.setLineWidth(.5); doc.line(M, fim, W-M, fim);
+      y=fim+15;
+    });
+    y+=4;
+  });
+  if(ESTADO.extras.length){
+    if(y>H-110) y=novaPag();
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...P.cinza);
+    doc.text('ITENS ADICIONADOS (SEM CÁLCULO)', M+5, y, {charSpace:1.2}); y+=14;
+    ESTADO.extras.forEach(e=>{
+      const f=famPor(e.dono);
+      doc.setFontSize(8.8); doc.setFont('helvetica','bold');
+      const c1=doc.splitTextToSize(e.nome, COLS[0][1]-10);
+      doc.setFont('helvetica','normal');
+      const c2=doc.splitTextToSize(e.qtd||'—', COLS[1][1]+COLS[2][1]-10);
+      const c4=doc.splitTextToSize(f?nomeCurto(f):'ninguém', COLS[3][1]-10);
+      const n=Math.max(c1.length,c2.length,c4.length);
+      if(y+n*11+6>H-58) y=novaPag();
+      doc.setTextColor(...P.tinta); doc.setFont('helvetica','bold'); doc.text(c1, M+5, y);
+      doc.setFont('helvetica','normal'); doc.text(c2, M+COLS[1][0]+5, y); doc.text(c4, M+COLS[3][0]+5, y);
+      const fim=y+(n-1)*11+6; doc.setDrawColor(...P.linha); doc.line(M, fim, W-M, fim); y=fim+15;
+    });
+  }
+  // peso de cada grupo
+  const ps=pesos(); const max=Math.max(...ps.map(p=>Math.max(p.g,p.p)),0.01);
+  if(y>H-60-ps.length*30-60){ doc.addPage(); y=cabecalhoCont(doc,'Relatório da distribuição (continuação)',COR_GERAL); }
+  else y+=16;
+  y=rotuloSecao(doc,'Peso de cada grupo (estimativa por preço médio)',y);
+  ps.forEach(p=>{
+    const cor=rgb(p.f.hex);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...cor); doc.text(nomeCurto(p.f), M, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...P.cinza);
+    doc.text((p.f.membros.length===1?'1 pessoa':p.f.membros.length+' pessoas')+' ('+pct(p.p)+') · cerca de '+pct(p.g)+' do gasto', M+92, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...STC[p.st]); doc.text(p.rot, W-M, y, {align:'right'});
+    const bx=M, by=y+6, bwid=W-2*M;
+    doc.setFillColor(...P.papel); doc.roundedRect(bx,by,bwid,6,3,3,'F');
+    if(p.g>0){ doc.setFillColor(...cor); doc.roundedRect(bx,by,Math.max(6,bwid*p.g/max),6,3,3,'F'); }
+    doc.setFillColor(...P.tinta); doc.rect(bx+bwid*p.p/max-0.8, by-3, 1.6, 12, 'F');
+    y+=30;
+  });
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...P.cinza);
+  doc.text('A barra mostra a parte do gasto. O traço mostra a parte das pessoas.', M, y);
+}
 function pdfGeral(){
   const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'});
-  let y=capa(doc,{eyebrow:'Encontro na chácara', titulo:'Quem traz o quê', sub:PESSOAS+' pessoas · '+FAMILIAS.length+' grupos · lista completa', cor:rgb('#b4502b')});
-  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...P.cinza);
-  doc.text('RESUMO POR FAMÍLIA', M, y, {charSpace:1.4}); y+=20;
+  const {v}=analiseGeral();
+  let y=capa(doc,{eyebrow:'Encontro na chácara', titulo:'Quem traz o quê', sub:PESSOAS+' pessoas · '+FAMILIAS.length+' grupos · lista completa e relatório', cor:COR_GERAL});
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...STC[v.st]);
+  const vl=doc.splitTextToSize('Situação: '+v.t, W-2*M); doc.text(vl, M, y-6); y+=vl.length*13+10;
+  y=rotuloSecao(doc,'Resumo por grupo',y);
   FAMILIAS.forEach(f=>{
     const cor=rgb(f.hex);
-    const nomes=itensDa(f.id).map(rotuloItem);
+    const its=daFamilia(f.id);
+    const nomes=its.map(x=>rotuloItem(x.i)+(x.extra?(x.i.qtd?' '+x.i.qtd:''):' '+curto(x.i,x.n)));
     doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
     const linhas=doc.splitTextToSize(nomes.length?nomes.join(', '):'Nada para levar por enquanto.', W-2*M-30);
     const alt=44+linhas.length*12.5;
-    if(y+alt>H-64){ doc.addPage(); y=cabecalhoCont(doc,'Resumo por família',rgb('#b4502b')); }
+    if(y+alt>H-64){ doc.addPage(); y=cabecalhoCont(doc,'Resumo por grupo',COR_GERAL); }
     doc.setFillColor(...P.papel); doc.roundedRect(M, y, W-2*M, alt, 6, 6, 'F');
     doc.setFillColor(...cor); doc.rect(M, y, 4, alt, 'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(12.5); doc.setTextColor(...cor); doc.text(f.nome, M+18, y+20);
     doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...P.cinza);
-    doc.text(membrosTxt(f)+' · '+nomes.length+' itens', W-M-14, y+20, {align:'right'});
+    doc.text((f.membros.length===1?'1 pessoa':f.membros.length+' pessoas')+' · '+nomes.length+(nomes.length===1?' item':' itens'), W-M-14, y+20, {align:'right'});
     doc.setFontSize(9.5); doc.setTextColor(...P.tinta); doc.text(linhas, M+18, y+38);
     y+=alt+10;
   });
+  paginasRelatorio(doc);
   FAMILIAS.forEach(f=>{
     doc.addPage();
     const yy=cabecalhoCont(doc, f.nome, rgb(f.hex));
@@ -1060,8 +1375,7 @@ async function baixar(btn, gerar, nomeArq){
   if(!window.jspdf){ toast('Não deu para montar o PDF aqui. Use "Copiar para o WhatsApp".'); return; }
   let blob;
   try{ blob=gerar(); }catch(e){ toast('Não deu para montar o PDF. Use "Copiar para o WhatsApp".'); return; }
-  /* Dentro do Claude: usa o salvamento do próprio app. */
-  if(window.claude && window.claude.use){
+  if(emClaude()){
     const dl=await window.claude.use('downloads').catch(()=>null);
     if(dl){
       btn.disabled=true;
@@ -1075,13 +1389,9 @@ async function baixar(btn, gerar, nomeArq){
       return;
     }
   }
-  /* Fora do Claude (arquivo aberto no celular ou no computador). */
   try{
     const arq=new File([blob], nomeArq, {type:'application/pdf'});
-    if(navigator.canShare && navigator.canShare({files:[arq]})){
-      await navigator.share({files:[arq], title:nomeArq});
-      return;
-    }
+    if(navigator.canShare && navigator.canShare({files:[arq]})){ await navigator.share({files:[arq], title:nomeArq}); return; }
   }catch(e){ if(e && e.name==='AbortError') return; }
   try{
     const url=URL.createObjectURL(blob);
@@ -1094,7 +1404,8 @@ async function baixar(btn, gerar, nomeArq){
 
 $('#pdfGeral').innerHTML=ICON_PDF+'Baixar PDF geral';
 $('#pdfGeral').onclick=()=>baixar($('#pdfGeral'), pdfGeral, 'Quem-traz-o-que-Lista-geral.pdf');
-$('#lead').textContent=PESSOAS+' pessoas. Escolha a sua família (ou o seu nome), marque o que já está garantido e salve a sua lista em PDF.';
-prepararNovo(); renderOrg(); renderEscolha(); renderMinha(); renderResumo(); atualizarAvisos();
-/*FIM-APP*/})({"dono":{},"extras":[]});</script>
+$('#lead').textContent=PESSOAS+' pessoas em '+FAMILIAS.length+' grupos. Escolha o seu nome ou o da sua família, marque o que já está garantido e salve a sua lista em PDF.';
+if(VEIO_DE_LINK) $('#org').open=false;
+prepararNovo(); renderDist(); renderEscolha(); renderMinha(); renderRelatorio(); renderResumo(); atualizarAvisos();
+/*FIM-APP*/})({});</script>
 </body></html>
