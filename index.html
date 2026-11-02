@@ -414,18 +414,18 @@ const CSS=`
 :root{
   --bg:#f2f4ee; --surface:#ffffff; --ink:#1b2620; --muted:#5a675f; --line:#dbe2d8; --soft:#e7ede3;
   --accent:#1f3d2f; --accent-ink:#ffffff; --gold:#9c7a2c; --warn:#a4561a;
-  --f-nicoly:#b4502b; --f-gabriel:#2c6797; --f-joao:#8a6710; --f-camily:#8a3e84; --f-dinora:#2b7a57;
+  --f-nicoly:#b4502b; --f-gabriel:#2c6797; --f-joao:#8a6710; --f-camily:#8a3e84; --f-dinora:#2b7a57; --f-sophia:#a3466b; --f-weverton:#1d7480; --f-bryan:#5146a8; --f-lucasb:#5c6e1e;
   --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
   --body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#121a15; --surface:#1a241e; --ink:#e6ece7; --muted:#9aa89f; --line:#2c3a32; --soft:#212c25;
   --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c; --warn:#f0a465;
-  --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; color-scheme:dark }}
+  --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; --f-sophia:#e58fb2; --f-weverton:#6cc4cf; --f-bryan:#a59cf0; --f-lucasb:#b5c96a; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#121a15; --surface:#1a241e; --ink:#e6ece7; --muted:#9aa89f; --line:#2c3a32; --soft:#212c25;
   --accent:#7cc8a1; --accent-ink:#0e1a13; --gold:#d8b25c; --warn:#f0a465;
-  --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; color-scheme:dark }
+  --f-nicoly:#ef8f68; --f-gabriel:#78b3e6; --f-joao:#dcb44f; --f-camily:#d690cf; --f-dinora:#6cc39a; --f-sophia:#e58fb2; --f-weverton:#6cc4cf; --f-bryan:#a59cf0; --f-lucasb:#b5c96a; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
 .toalha{height:16px;background:
@@ -541,7 +541,7 @@ const MARKUP=`
   <header>
     <p class="eyebrow">Encontro na chácara</p>
     <h1>Quem traz o quê</h1>
-    <p class="lead">16 pessoas, 5 famílias. Escolha a sua família, marque o que já está garantido e salve a sua lista em PDF.</p>
+    <p class="lead" id="lead">Escolha a sua família (ou o seu nome), marque o que já está garantido e salve a sua lista em PDF.</p>
   </header>
 
   <details class="org" id="org">
@@ -568,7 +568,7 @@ const MARKUP=`
   </details>
 
   <section aria-labelledby="h-escolha">
-    <h2 id="h-escolha">Qual é a sua família?</h2>
+    <h2 id="h-escolha">Quem é você?</h2>
     <div class="escolha" id="escolha"></div>
   </section>
 
@@ -599,7 +599,7 @@ ESTADO = ESTADO && typeof ESTADO==='object' ? ESTADO : {};
 ESTADO.dono = ESTADO.dono || {};
 ESTADO.extras = Array.isArray(ESTADO.extras) ? ESTADO.extras : [];
 const ORIGINAL = JSON.stringify(ESTADO);
-const KEY_MUD='lista-chacara-mudancas-v1';
+const KEY_MUD='lista-chacara-mudancas-v2';
 try{
   const l=JSON.parse(localStorage.getItem(KEY_MUD)||'null');
   if(l && l.base===ORIGINAL && l.estado && typeof l.estado==='object'){
@@ -608,11 +608,15 @@ try{
 }catch(e){}
 
 const FAMILIAS = [
-  {id:'nicoly',  nome:'Família Nicoly',  cor:'--f-nicoly',  hex:'#b4502b', membros:['Bruno','Nicolly','Silvio','Cleide']},
-  {id:'gabriel', nome:'Família Gabriel', cor:'--f-gabriel', hex:'#2c6797', membros:['Raissa','Gabriel','Sophia','Lucas']},
-  {id:'joao',    nome:'Família João',    cor:'--f-joao',    hex:'#8a6710', membros:['João','Bruna']},
-  {id:'camily',  nome:'Família Camily',  cor:'--f-camily',  hex:'#8a3e84', membros:['Camily','PH']},
-  {id:'dinora',  nome:'Família Dinorá',  cor:'--f-dinora',  hex:'#2b7a57', membros:['Dinorá','Esposo','Neto 1','Neto 2']},
+  {id:'nicoly',   nome:'Família Nicolly',  cor:'--f-nicoly',   hex:'#b4502b', membros:['Bruno','Nicolly','Silvio','Cleide']},
+  {id:'gabriel',  nome:'Família Gabriel',  cor:'--f-gabriel',  hex:'#2c6797', membros:['Raissa','Gabriel','Sophia (irmã da Raissa)','Lucas','Mãe','Pai']},
+  {id:'joao',     nome:'Família João',     cor:'--f-joao',     hex:'#8a6710', membros:['João','Bruna']},
+  {id:'camily',   nome:'Família Camily',   cor:'--f-camily',   hex:'#8a3e84', membros:['Camily','PH']},
+  {id:'dinora',   nome:'Família Dinorá',   cor:'--f-dinora',   hex:'#2b7a57', membros:['Dinorá','Esposo']},
+  {id:'bryan',    nome:'Bryan',            cor:'--f-bryan',    hex:'#5146a8', membros:['Bryan']},
+  {id:'sophia',   nome:'Família Sophia',   cor:'--f-sophia',   hex:'#a3466b', membros:['Sophia','Mãe']},
+  {id:'weverton', nome:'Família Weverton', cor:'--f-weverton', hex:'#1d7480', membros:['Weverton','Suellen','Filho 1','Filho 2']},
+  {id:'lucasbass',nome:'Lucas (Bass)',     cor:'--f-lucasb',   hex:'#5c6e1e', membros:['Lucas (Bass)']},
 ];
 const GRUPOS = [['manha','Café da manhã'],['almoco','Almoço'],['bebidas','Bebidas'],['sobremesas','Sobremesas'],['descartaveis','Descartáveis'],['tarde','Café da tarde'],['outros','Outros']];
 const NOME_GRUPO = Object.fromEntries(GRUPOS);
@@ -647,15 +651,20 @@ const BASE = [
   {id:'guardanapo', g:'descartaveis', nome:'Guardanapos', tipo:'un', pp:6, emb:[50,'pacote de 50','pacotes de 50']},
   ...cafe('tarde','_t'),
 ];
+/* Divisão pensada para o gasto de cada grupo ficar proporcional ao número de pessoas. */
+const DIVISAO = {
+  nicoly:   ['pao','manteiga','cafe','leite','bolacha','bolo','torta','torta_t'],
+  gabriel:  ['carne','molho'],
+  joao:     ['refri','sucos'],
+  camily:   ['mousse','copo','prato','garfo','colher','guardanapo'],
+  dinora:   ['pao_t','manteiga_t','leite_t'],
+  bryan:    ['sorvete'],
+  sophia:   ['bolo_t','cafe_t','bolacha_t'],
+  weverton: ['suco','nescau','arroz','farofa','vinagrete','linguica','frango'],
+  lucasbass:['suco_t','nescau_t'],
+};
 const PADRAO = {};
-BASE.forEach(i=>{
-  if(i.g==='manha') PADRAO[i.id]='nicoly';
-  else if(i.g==='tarde') PADRAO[i.id]= i.id==='torta_t' ? 'nicoly' : 'dinora';
-  else if(i.g==='descartaveis' || i.g==='sobremesas') PADRAO[i.id]='camily';
-  else if(['carne','linguica','molho'].includes(i.id)) PADRAO[i.id]='gabriel';
-  else if(i.id==='frango') PADRAO[i.id]='dinora';
-  else PADRAO[i.id]='joao';
-});
+Object.entries(DIVISAO).forEach(([f,ids])=>ids.forEach(id=>{ PADRAO[id]=f; }));
 const FORA='ninguem';
 let TODOS=[], DONO={};
 function aplicarEstado(){
@@ -701,7 +710,7 @@ const famPor = id => FAMILIAS.find(f=>f.id===id);
 const rotuloItem = i => i.nome+(i.g==='tarde'?' (tarde)':'');
 
 /* ---------- estado de cada celular ---------- */
-const KEY='lista-chacara-v1';
+const KEY='lista-chacara-v2';
 let st={fam:null, ok:{}, notas:{}};
 try{ const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s) st={...st,...s}; }catch(e){}
 const salvar=()=>{ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} };
@@ -771,7 +780,7 @@ function renderMinha(){
   corpo.appendChild(nota);
   const acoes=document.createElement('div'); acoes.className='acoes';
   const bPdf=document.createElement('button'); bPdf.type='button'; bPdf.className='btn cheio'; bPdf.innerHTML=ICON_PDF+'Baixar PDF da família';
-  bPdf.onclick=()=>baixar(bPdf, ()=>pdfFamilia(f), 'Lista-'+semAcento(f.nome).replace(/\s+/g,'-')+'.pdf');
+  bPdf.onclick=()=>baixar(bPdf, ()=>pdfFamilia(f), 'Lista-'+semAcento(f.nome).replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.pdf');
   const bCp=document.createElement('button'); bCp.type='button'; bCp.className='btn'; bCp.innerHTML=ICON_COPY+'Copiar para o WhatsApp';
   bCp.onclick=()=>copiar(textoFamilia(f));
   acoes.append(bPdf,bCp); corpo.appendChild(acoes);
@@ -845,7 +854,7 @@ function renderOrg(){
         const v=e.target.value;
         if(i.extra){ const ex=ESTADO.extras.find(x=>x.id===i.id); if(ex) ex.dono=v; }
         else if(v===PADRAO[i.id]) delete ESTADO.dono[i.id]; else ESTADO.dono[i.id]=v;
-        mudouEstado(); toast(rotuloItem(i)+': agora com '+(famPor(v)?famPor(v).nome:'ninguém'));
+        mudouEstado(); toast(rotuloItem(i)+': agora '+(famPor(v)?famPor(v).nome+' leva':'ninguém leva'));
       };
       const x=ln.querySelector('.x-btn');
       if(x) x.onclick=()=>{ ESTADO.extras=ESTADO.extras.filter(e=>e.id!==i.id); mudouEstado(); toast(i.nome+' apagado da lista'); };
@@ -863,7 +872,7 @@ function prepararNovo(){
     const novo={id:'x'+Date.now().toString(36), g:$('#addGrupo').value, nome, qtd:$('#addQtd').value.trim(), obs:$('#addObs').value.trim(), dono:$('#addFam').value};
     ESTADO.extras.push(novo);
     ['#addNome','#addQtd','#addObs'].forEach(s=>$(s).value='');
-    mudouEstado(); toast(nome+' adicionado para a '+famPor(novo.dono).nome);
+    mudouEstado(); toast(nome+' adicionado: '+famPor(novo.dono).nome+' leva');
   };
 }
 function contarMudancas(){
@@ -1006,7 +1015,7 @@ function rodapes(doc,rotulo){
     doc.text('Página '+p+' de '+n, W-M, H-26, {align:'right'});
   }
 }
-const membrosTxt=f=>f.membros.join(', ')+' · '+f.membros.length+' pessoas';
+const membrosTxt=f=>f.membros.join(', ')+' · '+(f.membros.length===1?'1 pessoa':f.membros.length+' pessoas');
 function pdfFamilia(f){
   const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'});
   let y=capa(doc,{eyebrow:'Encontro na chácara · quem traz o quê', titulo:f.nome, sub:membrosTxt(f), cor:rgb(f.hex)});
@@ -1019,7 +1028,7 @@ function pdfFamilia(f){
 }
 function pdfGeral(){
   const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'});
-  let y=capa(doc,{eyebrow:'Encontro na chácara', titulo:'Quem traz o quê', sub:PESSOAS+' pessoas · '+FAMILIAS.length+' famílias · lista completa', cor:rgb('#b4502b')});
+  let y=capa(doc,{eyebrow:'Encontro na chácara', titulo:'Quem traz o quê', sub:PESSOAS+' pessoas · '+FAMILIAS.length+' grupos · lista completa', cor:rgb('#b4502b')});
   doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...P.cinza);
   doc.text('RESUMO POR FAMÍLIA', M, y, {charSpace:1.4}); y+=20;
   FAMILIAS.forEach(f=>{
@@ -1085,6 +1094,7 @@ async function baixar(btn, gerar, nomeArq){
 
 $('#pdfGeral').innerHTML=ICON_PDF+'Baixar PDF geral';
 $('#pdfGeral').onclick=()=>baixar($('#pdfGeral'), pdfGeral, 'Quem-traz-o-que-Lista-geral.pdf');
+$('#lead').textContent=PESSOAS+' pessoas. Escolha a sua família (ou o seu nome), marque o que já está garantido e salve a sua lista em PDF.';
 prepararNovo(); renderOrg(); renderEscolha(); renderMinha(); renderResumo(); atualizarAvisos();
 /*FIM-APP*/})({"dono":{},"extras":[]});</script>
 </body></html>
